@@ -66,7 +66,11 @@ fn is_dont(s: &str) -> Option<&str> {
 }
 fn is_mul(s: &str) -> Option<(&str, (i64, i64))> {
     let s = s.strip_prefix("mul(")?;
-    let (args, remaining) = s.split_once(')')?;
+    let paren_idx = s.chars()
+        .take(8)
+        .enumerate()
+        .find_map(|(i, c)| (c == ')').then_some(i))?;
+    let (args, remaining) = s.split_at(paren_idx);
     let (left, right) = args.split_once(',')?;
     let left = parse_arg(left)?;
     let right = parse_arg(right)?;
