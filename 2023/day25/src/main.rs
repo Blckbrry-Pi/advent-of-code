@@ -9,11 +9,10 @@ fn main() {
     part1();
 }
 
-const PART_1: &str = include_str!("../../../data/2023/day25/p1.txt");
-// const PART_2: &str = include_str!("../../data/day25/p2.txt");
+const INPUT: &str = include_str!("../../../data/2023/day25/input.txt");
 
 fn part1() {
-    let system = parse_input(PART_1);
+    let system = parse_input(INPUT);
 
     let from = system.components().next().unwrap();
     let path = 'path: {

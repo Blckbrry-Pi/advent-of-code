@@ -6,12 +6,11 @@ fn main() {
 }
 
 const TEST: &str = include_str!("../../data/day7/test.txt");
-const PART_1: &str = include_str!("../../data/day7/p1.txt");
-const PART_2: &str = include_str!("../../data/day7/p2.txt");
+const INPUT: &str = include_str!("../../data/day7/input.txt");
 
 fn part1() {
     let start = std::time::Instant::now();
-    let equations = parse_input(PART_1);
+    let equations = parse_input(INPUT);
 
     let mut sum = 0;
     for equation in equations {
@@ -25,7 +24,7 @@ fn part1() {
 
 fn part2() {
     let start = std::time::Instant::now();
-    let equations = parse_input(PART_2);
+    let equations = parse_input(INPUT);
 
     let mut sum = 0;
     for equation in equations {

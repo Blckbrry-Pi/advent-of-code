@@ -6,12 +6,11 @@ fn main() {
 }
 
 const TEST: &str = include_str!("../../../data/2019/day5/test.txt");
-const PART_1: &str = include_str!("../../../data/2019/day5/p1.txt");
-const PART_2: &str = include_str!("../../../data/2019/day5/p2.txt");
+const INPUT: &str = include_str!("../../../data/2019/day5/input.txt");
 
 fn part1() {
     let start = Instant::now();
-    let mut data = parse_input(PART_1);
+    let mut data = parse_input(INPUT);
     let mut input = [1].into_iter();
 
     let mut pc = 0;
@@ -37,7 +36,7 @@ fn part1() {
 
 fn part2() {
     let start = Instant::now();
-    let mut data = parse_input(PART_2);
+    let mut data = parse_input(INPUT);
     let mut input = [5].into_iter();
 
     let mut pc = 0;

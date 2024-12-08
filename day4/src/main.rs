@@ -27,8 +27,7 @@ fn main() {
 }
 
 const TEST: &str = include_str!("../../data/day4/test.txt");
-const PART_1: &str = include_str!("../../data/day4/p1.txt");
-const PART_2: &str = include_str!("../../data/day4/p2.txt");
+const INPUT: &str = include_str!("../../data/day4/input.txt");
 
 const XMAS: Pattern = matching_pattern![
     [X, _, _, _, _]
@@ -49,7 +48,7 @@ const X_MAS: Pattern = matching_pattern![
 fn part1() {
     const ROTATIONS: &[usize] = &[0, 1, 2, 3, 4, 5, 6, 7];
 
-    let field = parse_input(PART_1);
+    let field = parse_input(INPUT);
     let matches_found = find_5x5_with_rotations(&field, XMAS, &ROTATIONS).len();
 
     println!("Part 1: {}", matches_found);
@@ -58,7 +57,7 @@ fn part1() {
 fn part2() {
     const ROTATIONS: &[usize] = &[0, 2, 4, 6];
 
-    let field = parse_input(PART_2);
+    let field = parse_input(INPUT);
     let matches_found = find_5x5_with_rotations(&field, X_MAS, &ROTATIONS).len();
 
     println!("Part 2: {}", matches_found);

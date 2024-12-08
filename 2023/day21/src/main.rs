@@ -10,17 +10,15 @@ fn main() {
 }
 
 const TEST: &str = include_str!("../../../data/2023/day21/test.txt");
-const PART_1: &str = include_str!("../../../data/2023/day21/p1.txt");
-const PART_2: &str = include_str!("../../../data/2023/day21/p2.txt");
+const INPUT: &str = include_str!("../../../data/2023/day21/input.txt");
 
 fn part1() {
-    let plot = parse_input(PART_1);
+    let plot = parse_input(INPUT);
     println!("Part 1: {}", plot.calc_history(plot.start()).get(64).size());
 }
 
 fn part2() {
-    let plot = parse_input(PART_2);
-    // let plot = parse_input(TEST);
+    let plot = parse_input(INPUT);
 
     let steps_to_ul_plot = plot.start().manhattan_distance(Position::new(-1, -1));
     let steps_to_uc_plot = plot.start().manhattan_distance(Position::new(plot.start().x(), -1));

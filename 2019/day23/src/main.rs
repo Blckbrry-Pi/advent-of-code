@@ -11,14 +11,13 @@ fn main() {
 }
 
 const TEST: &str = include_str!("../../../data/2019/day23/test.txt");
-const PART_1: &str = include_str!("../../../data/2019/day23/p1.txt");
-const PART_2: &str = include_str!("../../../data/2019/day23/p2.txt");
+const INPUT: &str = include_str!("../../../data/2019/day23/input.txt");
 
 
 
 fn part1() {
     let start = Instant::now();
-    let data = parse_input(PART_1);
+    let data = parse_input(INPUT);
 
     let mut machines: Vec<(Machine, Vec<isize>)> = (0..50).map(|v| (
         Machine::new(vec![v]),
@@ -65,7 +64,7 @@ struct IdleState {
 
 fn part2() {
     let start = Instant::now();
-    let mut data = parse_input(PART_2);
+    let mut data = parse_input(INPUT);
 
     let mut machines: Vec<_> = (0..50).map(|v| (
         Machine::new(vec![v]),

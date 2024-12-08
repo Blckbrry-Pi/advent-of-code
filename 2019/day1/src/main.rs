@@ -6,12 +6,11 @@ fn main() {
 }
 
 const TEST: &str = include_str!("../../../data/2019/day1/test.txt");
-const PART_1: &str = include_str!("../../../data/2019/day1/p1.txt");
-const PART_2: &str = include_str!("../../../data/2019/day1/p2.txt");
+const INPUT: &str = include_str!("../../../data/2019/day1/input.txt");
 
 fn part1() {
     let start = Instant::now();
-    let lines = parse_input(PART_1);
+    let lines = parse_input(INPUT);
 
     let sum: usize = lines.into_iter().map(|mass| mass / 3 - 2).sum::<usize>();
 
@@ -20,7 +19,7 @@ fn part1() {
 
 fn part2() {
     let start = Instant::now();
-    let lines = parse_input(PART_2);
+    let lines = parse_input(INPUT);
 
     let sum: usize = lines.into_iter().map(calc_fuel).sum::<usize>();
 

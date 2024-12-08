@@ -4,11 +4,10 @@ fn main() {
 }
 
 const TEST: &str = include_str!("../../../data/2022/day2/test.txt");
-const PART_1: &str = include_str!("../../../data/2022/day2/p1.txt");
-const PART_2: &str = include_str!("../../../data/2022/day2/p2.txt");
+const INPUT: &str = include_str!("../../../data/2022/day2/input.txt");
 
 fn part1() {
-    let rounds = parse_input(PART_1);
+    let rounds = parse_input(INPUT);
     
     let total: usize = rounds.iter()
         .map(|(opponent, player)| Play::round_score(*player, *opponent))
@@ -18,7 +17,7 @@ fn part1() {
 }
 
 fn part2() {
-    let rounds = parse_input(PART_2);
+    let rounds = parse_input(INPUT);
     
     let total: usize = rounds.iter()
         .map(|(opponent, player)| Play::round_score_with_intent((*player).into(), *opponent))

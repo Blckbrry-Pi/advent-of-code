@@ -4,22 +4,10 @@ fn main() {
 }
 
 const TEST: &str = include_str!("../../data/day2/test.txt");
-const PART_1: &str = include_str!("../../data/day2/p1.txt");
-const PART_2: &str = include_str!("../../data/day2/p2.txt");
-
-// fn part1() {
-//     let (mut left, mut right) = parse_input(PART_1);
-
-//     left.sort();
-//     right.sort();
-
-//     let sum: i32 = zipped(left, right).map(diffed).sum();
-
-//     println!("Part 1: {}", sum);
-// }
+const INPUT: &str = include_str!("../../data/day2/input.txt");
 
 fn part1() {
-    let rows = parse_input(PART_1);
+    let rows = parse_input(INPUT);
     
     let mut safe_count = 0;
     for row in rows {
@@ -47,7 +35,7 @@ fn part1() {
 }
 
 fn part2() {
-    let rows = parse_input(PART_2);
+    let rows = parse_input(INPUT);
     
     let mut safe_count = 0;
     for row in rows {

@@ -4,11 +4,10 @@ fn main() {
 }
 
 const TEST: &str = include_str!("../../data/day3/test.txt");
-const PART_1: &str = include_str!("../../data/day3/p1.txt");
-const PART_2: &str = include_str!("../../data/day3/p2.txt");
+const INPUT: &str = include_str!("../../data/day3/input.txt");
 
 fn part1() {
-    let instructions = parse_input(PART_1);
+    let instructions = parse_input(INPUT);
 
     let mult = instructions.iter()
         .copied()
@@ -22,7 +21,7 @@ fn part1() {
 }
 
 fn part2() {
-    let instructions = parse_input(PART_2);
+    let instructions = parse_input(INPUT);
 
     let (sum, _enabled) = instructions.into_iter()
         .fold((0, true), |(sum, enabled), instruction| {

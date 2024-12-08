@@ -10,10 +10,10 @@ fn main() {
 }
 
 const TEST: &str = include_str!("../../../data/2023/day24/test.txt");
-const PART_2: &str = include_str!("../../../data/2023/day24/p2.txt");
+const INPUT: &str = include_str!("../../../data/2023/day24/input.txt");
 
 fn part2() {
-    let hailstones = parse_input(PART_2);
+    let hailstones = parse_input(INPUT);
 
     let a = hailstones[0];
     let b = hailstones[1];

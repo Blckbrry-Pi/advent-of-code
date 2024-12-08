@@ -6,12 +6,11 @@ fn main() {
 }
 
 const TEST: &str = include_str!("../../data/day6/test.txt");
-const PART_1: &str = include_str!("../../data/day6/p1.txt");
-const PART_2: &str = include_str!("../../data/day6/p2.txt");
+const INPUT: &str = include_str!("../../data/day6/input.txt");
 
 fn part1() {
     let start = std::time::Instant::now();
-    let mut map = parse_input(PART_1);
+    let mut map = parse_input(INPUT);
 
     while map.guard_in_bounds() {
         if map.step() {
@@ -29,8 +28,7 @@ fn part1() {
 
 fn part2() {
     let start = std::time::Instant::now();
-    let template_map = parse_input(PART_2);
-    // let map = parse_input(TEST);
+    let template_map = parse_input(INPUT);
 
     let explored_in_bounds = {
         let mut map = template_map.clone();
