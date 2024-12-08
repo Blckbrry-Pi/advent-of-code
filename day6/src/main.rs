@@ -1,4 +1,5 @@
-use std::{ collections::{HashMap, HashSet}, fmt::Debug, str::FromStr };
+use std::collections::{HashMap, HashSet};
+use std::fmt::Debug;
 
 fn main() {
     part1();
@@ -13,13 +14,8 @@ fn part1() {
     let mut map = parse_input(INPUT);
 
     while map.guard_in_bounds() {
-        if map.step() {
-            if map.guard_state_seen_before() > 2 {
-                panic!("cry {map:?}");
-            } else {
-                map.log_guard_state();
-            }
-        }
+        map.step();
+        map.log_guard_state();
     }
 
     let out = map.explored_in_bounds().len();
@@ -46,14 +42,8 @@ fn part2() {
     };
 
     let mut loops = vec![];
-    for (i, pos) in explored_in_bounds.iter().copied().enumerate() {
+    for pos in explored_in_bounds.iter().copied() {
         if template_map.guard.loc == pos { continue }
-        if i % 500 == 0 {
-            println!("{i}");
-        }
-        // if i == 5 {
-        //     break;
-        // }
 
         let mut map = template_map.clone();
         map.cells[pos.y as usize][pos.x as usize] = Cell::NewObstructed;
@@ -61,7 +51,6 @@ fn part2() {
         while map.guard_in_bounds() {
             if map.step() {
                 if map.guard_state_seen_before() > 2 {
-                    // println!("{map:?}");
                     loops.push(pos);
                     break
                 } else {
@@ -69,11 +58,7 @@ fn part2() {
                 }
             }
         }
-        // if loop_found && map.explored_in_bounds() != explored_in_bounds.iter().copied().collect() {
-        //     println
-        // }
     }
-    println!("{loops:?}");
 
     println!("Part 2: {} ({:?})", loops.len(), start.elapsed());
 }
@@ -122,9 +107,10 @@ impl Map {
     }
 
     pub fn get(&self, Pos { x, y }: Pos) -> Cell {
-        let x = x.rem_euclid(self.cols() as isize) as usize;
-        let y = y.rem_euclid(self.rows() as isize) as usize;
-
+        let (x, y) = (x as usize, y as usize);
+        if !(0..self.rows()).contains(&y) || !(0..self.cols()).contains(&x) {
+            return Cell::Clear;
+        }
         self.cells[y][x]
     }
 
