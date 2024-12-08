@@ -1,9 +1,11 @@
-use std::{collections::{HashMap, HashSet}, fmt::Debug};
+use std::collections::{HashMap, HashSet};
+use std::fmt::Debug;
 
 fn main() {
     part1();
     part2();
 }
+
 
 const TEST: &str = include_str!("../../data/day8/test.txt");
 const INPUT: &str = include_str!("../../data/day8/input.txt");
@@ -66,10 +68,45 @@ impl Map {
         0 <= p.x && p.x < self.width as isize &&
         0 <= p.y && p.y < self.height as isize
     }
-    pub fn antinodes_for_p1(&self, f: Freq) -> Vec<Pos> {
-        let mut positions = vec![];
+
+    pub fn antinodes_for_p1(&self, a: Pos, b: Pos) -> impl Iterator<Item = Pos> {
+        let test_a = a.sub(b).add(a);
+        let test_b = b.sub(a).add(b);
+        let mut positions = [None, None];
+        if self.has_pos(test_a) { positions[0] = Some(test_a) }
+        if self.has_pos(test_b) { positions[1] = Some(test_b) }
+        
+        positions.into_iter().flatten()
+    }
+    pub fn antinodes_for_p2(&self, a: Pos, b: Pos) -> impl Iterator<Item = Pos> {
+        let step_a = a.sub(b).simplify();
+        let step_b = b.sub(a).simplify();
+
+        let mut positions = HashSet::new();
+
+        let mut test_a = step_a;
+        while self.has_pos(test_a) {
+            positions.insert(test_a);
+            test_a = test_a.add(step_a);
+        }
+
+        let mut test_b = step_b;
+        while self.has_pos(test_b) {
+            positions.insert(test_b);
+            test_b = test_b.add(step_b);
+        }
+
+        positions.into_iter()
+    }
+
+    pub fn antinodes_for<O: Iterator<Item = Pos>>(
+        &self,
+        f: Freq,
+        gen_possible_antinodes: impl Fn(&Self, Pos, Pos) -> O,
+    ) -> HashSet<Pos> {
+        let mut positions = HashSet::new();
         let Some(freq_matches) = self.antennae.get(&f) else {
-            return vec![];
+            return positions;
         };
         for &pos_a in freq_matches {
             for &pos_b in freq_matches {
@@ -77,10 +114,8 @@ impl Map {
                     continue;
                 }
 
-                let test = pos_a.sub(pos_b).add(pos_a);
-
-                if self.has_pos(test) {
-                    positions.push(test);
+                for antinode in gen_possible_antinodes(self, pos_a, pos_b) {
+                    positions.insert(antinode);
                 }
             }
         }
@@ -88,40 +123,23 @@ impl Map {
         positions
     }
 
-    pub fn all_antinodes_p1(&self) -> HashMap<Freq, Vec<Pos>> {
+    fn all_antinodes<O: Iterator<Item = Pos>>(
+        &self,
+        gen_possible_antinodes: impl Fn(&Self, Pos, Pos) -> O + Clone + Copy,
+    ) -> HashMap<Freq, HashSet<Pos>> {
         self.antennae.keys()
-            .map(|&k| (k, self.antinodes_for_p1(k)))
+            .map(|&k| (
+                k,
+                self.antinodes_for(k, gen_possible_antinodes),
+            ))
             .collect()
     }
 
-    pub fn antinodes_for_p2(&self, f: Freq) -> Vec<Pos> {
-        let mut positions = HashSet::new();
-        let Some(freq_matches) = self.antennae.get(&f) else {
-            return vec![];
-        };
-        for &pos_a in freq_matches {
-            for &pos_b in freq_matches {
-                if pos_a == pos_b {
-                    continue;
-                }
-
-                let step = pos_a.sub(pos_b).simplify();
-
-                let mut curr = pos_a;
-                while self.has_pos(curr) {
-                    positions.insert(curr);
-                    curr = curr.add(step);
-                }
-            }
-        }
-
-        positions.into_iter().collect()
+    pub fn all_antinodes_p1(&self) -> HashMap<Freq, HashSet<Pos>> {
+        self.all_antinodes(Self::antinodes_for_p1)
     }
-
-    pub fn all_antinodes_p2(&self) -> HashMap<Freq, Vec<Pos>> {
-        self.antennae.keys()
-            .map(|&k| (k, self.antinodes_for_p2(k)))
-            .collect()
+    pub fn all_antinodes_p2(&self) -> HashMap<Freq, HashSet<Pos>> {
+        self.all_antinodes(Self::antinodes_for_p2)
     }
 }
 
