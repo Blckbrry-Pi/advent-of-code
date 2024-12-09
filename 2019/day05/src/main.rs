@@ -5,8 +5,8 @@ fn main() {
     part2();
 }
 
-const TEST: &str = include_str!("../../../data/2019/day5/test.txt");
-const INPUT: &str = include_str!("../../../data/2019/day5/input.txt");
+const TEST: &str = include_str!("../../../data/2019/day05/test.txt");
+const INPUT: &str = include_str!("../../../data/2019/day05/input.txt");
 
 fn part1() {
     let start = Instant::now();

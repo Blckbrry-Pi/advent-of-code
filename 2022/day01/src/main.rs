@@ -3,8 +3,8 @@ fn main() {
     part2();
 }
 
-const TEST: &str = include_str!("../../../data/2022/day1/test.txt");
-const INPUT: &str = include_str!("../../../data/2022/day1/input.txt");
+const TEST: &str = include_str!("../../../data/2022/day01/test.txt");
+const INPUT: &str = include_str!("../../../data/2022/day01/input.txt");
 
 fn part1() {
     let lines = parse_input(INPUT);
