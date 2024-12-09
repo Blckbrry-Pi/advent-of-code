@@ -1,0 +1,32 @@
+#!/bin/bash
+
+day=$1
+year=$2
+
+year_with_default=2024
+
+release=$3
+
+if [ "$day" = "" ]; then
+    echo "Missing day"
+    exit 1
+fi
+if [ $day -lt 10 ]; then
+    day="0$day"
+fi
+
+binaryname=day$day
+if [ "$year" != "" ] && [ "$year" != 2024 ]; then
+    binaryname="$binaryname-$year"
+    year_with_default="$year"
+fi
+
+CMD="cargo run -q --bin $binaryname"
+
+if [ "$release" = "release" ]; then
+    CMD="$CMD --release"
+fi
+
+echo "Year $year_with_default, Day $day"
+$CMD
+echo

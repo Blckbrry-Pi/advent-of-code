@@ -6,6 +6,7 @@ fn main() {
     part2();
 }
 
+#[allow(dead_code)]
 const TEST: &str = include_str!("../../data/day06/test.txt");
 const INPUT: &str = include_str!("../../data/day06/input.txt");
 

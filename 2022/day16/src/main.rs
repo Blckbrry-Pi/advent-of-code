@@ -7,6 +7,7 @@ fn main() {
     part2();
 }
 
+#[allow(dead_code)]
 const TEST: &str = include_str!("../../../data/2022/day16/test.txt");
 const INPUT: &str = include_str!("../../../data/2022/day16/input.txt");
 
@@ -19,8 +20,8 @@ fn part1() {
 }
 
 fn part2() {
-    let network = parse_input(INPUT);
-    // println!("Part 2: {}", total);
+    let _network = parse_input(INPUT);
+
 }
 
 

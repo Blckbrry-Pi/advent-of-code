@@ -26,6 +26,7 @@ fn main() {
     part2();
 }
 
+#[allow(dead_code)]
 const TEST: &str = include_str!("../../data/day04/test.txt");
 const INPUT: &str = include_str!("../../data/day04/input.txt");
 
@@ -118,6 +119,7 @@ fn find_5x5_with_rotations(field: &[Vec<Letter>], pattern: Pattern, rotations: &
     found
 }
 
+#[allow(dead_code)]
 fn find_5x5(field: &[Vec<Letter>], pattern: Pattern) -> Vec<(isize, isize)> {
     let mut found = vec![];
     let width = field[0].len() as isize;

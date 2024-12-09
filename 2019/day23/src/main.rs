@@ -10,10 +10,9 @@ fn main() {
     part2();
 }
 
+#[allow(dead_code)]
 const TEST: &str = include_str!("../../../data/2019/day23/test.txt");
 const INPUT: &str = include_str!("../../../data/2019/day23/input.txt");
-
-
 
 fn part1() {
     let start = Instant::now();
@@ -64,7 +63,7 @@ struct IdleState {
 
 fn part2() {
     let start = Instant::now();
-    let mut data = parse_input(INPUT);
+    let data = parse_input(INPUT);
 
     let mut machines: Vec<_> = (0..50).map(|v| (
         Machine::new(vec![v]),

@@ -1,10 +1,9 @@
-use std::{ collections::HashMap, str::FromStr };
-
 fn main() {
     part1();
     part2();
 }
 
+#[allow(dead_code)]
 const TEST: &str = include_str!("../../data/day07/test.txt");
 const INPUT: &str = include_str!("../../data/day07/input.txt");
 
