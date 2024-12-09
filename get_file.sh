@@ -11,6 +11,10 @@ elif [ "$cookie" = "" ]; then
     exit 2
 fi
 
+if [ $day -lt 10 ]; then
+    day="0$day"
+fi
+
 mkdir data/day$day
 touch data/day$day/test.txt
 curl --cookie "$cookie" https://adventofcode.com/2024/day/$day/input > data/day$day/input.txt

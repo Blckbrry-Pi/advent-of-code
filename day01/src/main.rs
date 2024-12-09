@@ -9,8 +9,8 @@ fn main() {
     part2();
 }
 
-const TEST: &str = include_str!("../../data/day1/test.txt");
-const INPUT: &str = include_str!("../../data/day1/input.txt");
+const TEST: &str = include_str!("../../data/day01/test.txt");
+const INPUT: &str = include_str!("../../data/day01/input.txt");
 
 fn part1() {
     let (mut left, mut right) = parse_input(INPUT);

@@ -26,8 +26,8 @@ fn main() {
     part2();
 }
 
-const TEST: &str = include_str!("../../data/day4/test.txt");
-const INPUT: &str = include_str!("../../data/day4/input.txt");
+const TEST: &str = include_str!("../../data/day04/test.txt");
+const INPUT: &str = include_str!("../../data/day04/input.txt");
 
 const XMAS: Pattern = matching_pattern![
     [X, _, _, _, _]

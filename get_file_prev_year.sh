@@ -15,6 +15,10 @@ elif [ "$cookie" = "" ]; then
     exit 2
 fi
 
+if [ $day -lt 10 ]; then
+    day="0$day"
+fi
+
 mkdir -p data/$year
 mkdir data/$year/day$day
 touch data/$year/day$day/test.txt

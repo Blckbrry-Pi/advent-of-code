@@ -5,8 +5,8 @@ fn main() {
     part2();
 }
 
-const TEST: &str = include_str!("../../data/day7/test.txt");
-const INPUT: &str = include_str!("../../data/day7/input.txt");
+const TEST: &str = include_str!("../../data/day07/test.txt");
+const INPUT: &str = include_str!("../../data/day07/input.txt");
 
 fn part1() {
     let start = std::time::Instant::now();
