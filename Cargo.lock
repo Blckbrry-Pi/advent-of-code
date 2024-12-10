@@ -37,7 +37,15 @@ name = "day03"
 version = "0.1.0"
 
 [[package]]
+name = "day03-2019"
+version = "0.1.0"
+
+[[package]]
 name = "day04"
+version = "0.1.0"
+
+[[package]]
+name = "day04-2019"
 version = "0.1.0"
 
 [[package]]
@@ -102,6 +110,10 @@ version = "0.1.0"
 dependencies = [
  "num-bigint",
 ]
+
+[[package]]
+name = "day25-2019"
+version = "0.1.0"
 
 [[package]]
 name = "day25-2023"
