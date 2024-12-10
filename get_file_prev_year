@@ -1,5 +1,6 @@
 #!/bin/bash
 
+day_url=$1
 day=$1
 year=$2
 cookie=`cat .aoc_cookie`
@@ -22,4 +23,4 @@ fi
 mkdir -p data/$year
 mkdir data/$year/day$day
 touch data/$year/day$day/test.txt
-curl --cookie "$cookie" https://adventofcode.com/$year/day/$day/input > data/$year/day$day/input.txt
+curl --cookie "$cookie" https://adventofcode.com/$year/day/$day_url/input > data/$year/day$day/input.txt

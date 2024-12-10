@@ -3,7 +3,7 @@
 members = [
     # 2024
     "day01", "day02", "day03", "day04", "day05",
-    "day06", "day07", "day08",
+    "day06", "day07", "day08", "day09",
 
     # 2023
     "2023/day12", "2023/day24", "2023/day25", "2023/day21",
