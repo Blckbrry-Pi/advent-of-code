@@ -6,8 +6,8 @@ fn main() {
 }
 
 #[allow(dead_code)]
-const TEST: &str = include_str!("../../../data/2019/day05/test.txt");
-const INPUT: &str = include_str!("../../../data/2019/day05/input.txt");
+const TEST: &str = include_str!("../../../data/2019/day02/test.txt");
+const INPUT: &str = include_str!("../../../data/2019/day02/input.txt");
 
 fn part1() {
     let start = Instant::now();
