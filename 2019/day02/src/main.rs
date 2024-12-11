@@ -14,7 +14,6 @@ fn part1() {
     let mut data = parse_input(INPUT);
 
     restore_gravity_assist(&mut data);
-    println!("data: {data:?}");
 
     let mut pc = 0;
 

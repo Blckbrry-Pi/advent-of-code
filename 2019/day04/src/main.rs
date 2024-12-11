@@ -14,7 +14,6 @@ fn part1() {
     let (from, to) = parse_input(INPUT);
 
     let out = nondecreasing_number(6, 1)
-        .inspect(|v| println!("{v}"))
         .filter(number_valid(from, to))
         .count();
 
@@ -27,7 +26,6 @@ fn part2() {
 
     let out = nondecreasing_number(6, 1)
         .filter(number_valid_p2(from, to))
-        .inspect(|v| println!("{v}"))
         .count();
 
     println!("Part 2: {out} {:?}", start.elapsed());
@@ -56,7 +54,6 @@ pub fn nondecreasing_number(digits_left: u32, next_digit_at_least: usize) -> Box
 pub fn number_valid(from: usize, to: usize) -> impl Fn(&usize) -> bool {
     move |&value| {
         if !(from <= value && value <= to) {
-            println!("Out of range");
             return false;
         }
         for i in 0..5 {

@@ -1,4 +1,5 @@
-use std::{ collections::{HashMap, HashSet}, fmt::{Debug, Write}, str::FromStr };
+use std::collections::HashSet;
+use std::fmt::Debug;
 
 fn main() {
     part1();
@@ -266,14 +267,15 @@ impl FileSystem {
         sum
     }
 
+    #[allow(dead_code)]
     fn canonical_representation(&self) -> String {
         let mut s = String::new();
         for &block in self.blocks.iter() {
             match block {
-                Block::File { id, size } => for i in 0..size {
+                Block::File { id, size } => for _ in 0..size {
                     s.push((id as u8 + b'0') as char);
                 },
-                Block::Free { size } => for i in 0..size {
+                Block::Free { size } => for _ in 0..size {
                     s.push('.');
                 },
             }

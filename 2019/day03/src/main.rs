@@ -1,4 +1,5 @@
-use std::{collections::{HashMap, HashSet}, time::Instant};
+use std::collections::HashMap;
+use std::time::Instant;
 
 fn main() {
     part1();

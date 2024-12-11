@@ -116,7 +116,6 @@ impl Instruction {
     pub fn parse(data: &[isize], idx: usize) -> Option<Self> {
         if idx >= data.len() { return None }
         let opcode = data[idx];
-        println!("opcode: {opcode}");
         let mode_0 = Mode::from_int(opcode / 100 % 10);
         let mode_1 = Mode::from_int(opcode / 1000 % 10);
         let mode_2 = Mode::from_int(opcode / 10000 % 10);

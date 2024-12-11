@@ -55,13 +55,11 @@ impl Machine {
                             Ok(0) => (),
                             Ok(_) => unreachable!("Read more than 1 byte into a 1 byte buffer"),
                             Err(e) => {
-                                sender.send(Err(e));
+                                sender.send(Err(e)).unwrap();
                             },
                         }
                     }
                 });
-
-                let mut input_str = String::new();
 
                 while let Some(instruction) = Instruction::parse(&self, &data) {
                     instruction.exec(self, data);
@@ -73,24 +71,14 @@ impl Machine {
                     }
         
                     // Read in
-                    let mut some_read = false;
                     loop {
                         match receiver.try_recv() {
-                            Ok(Ok(byte)) => {
-                                self.input.push(byte as isize);
-                                input_str.push(byte as char);
-                                // let bytes = self.input.
-                                // some_read = true;
-                                // println!("{:?}", input_str);
-                            },
+                            Ok(Ok(byte)) => self.input.push(byte as isize),
                             Ok(Err(e)) => {
                                 reader_handle.join().unwrap();
                                 return Err(e);
                             },
-                            Err(TryRecvError::Empty) => {
-                                // if some_read { self.input.push(b' ' as isize); }
-                                break
-                            },
+                            Err(TryRecvError::Empty) => break,
                             Err(TryRecvError::Disconnected) => {
                                 reader_handle.join().unwrap();
                                 return Err(std::io::Error::last_os_error());
@@ -102,25 +90,5 @@ impl Machine {
                 Ok(())
             }
         )
-        // while let Some(instruction) = Instruction::parse(&self, &data) {
-        //     instruction.exec(self, data);
-        //     println!("Executing: {instruction:?}");
-        //     // 
-        //     if let Some(&ch) = self.output.first() {
-        //         self.output.remove(0);
-        //         output.write(&[ch as u8])?;
-        //         output.flush()?;
-        //     }
-
-        //     // Read in
-        //     use std::io::Read;
-        //     let mut buffer = [0];
-        //     if input.has_data_left()? {
-        //         assert_eq!(input.read(&mut buffer)?, 1);
-        //         self.input.push(buffer[0] as isize);
-        //     }
-        // }
-
-        // Ok(())
     }
 }

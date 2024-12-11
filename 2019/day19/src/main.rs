@@ -45,10 +45,10 @@ fn part2() {
     let start = Instant::now();
     let template_data = parse_input(INPUT);
 
-    let mut beam = vec![[false; 10000]; 10000];
+    let mut beam = vec![[false; 1500]; 1500];
 
-    for x in 0..2000 {
-        for y in 0..2000 {
+    for x in 0..1500 {
+        for y in 0..1500 {
             let mut data = template_data.clone();
             let mut machine = Machine::new(vec![x, y]);
         
