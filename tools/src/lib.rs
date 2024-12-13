@@ -7,7 +7,7 @@ macro_rules! aoc_sol {
         use std::collections::{ HashSet, HashMap };
 
         #[allow(dead_code)]
-        fn main() {
+        pub fn main() {
             #[allow(dead_code)]
             const TEST: &str = include_str!(concat!("../../data/", stringify!($day), "/test.txt"));
             const INPUT: &str = include_str!(concat!("../../data/", stringify!($day), "/input.txt"));
