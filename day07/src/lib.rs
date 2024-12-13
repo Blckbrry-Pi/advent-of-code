@@ -1,6 +1,6 @@
 aoc_tools::aoc_sol!(day07: part1, part2);
 
-fn part1(input: &str) -> isize {
+pub fn part1(input: &str) -> isize {
     let equations = parse_input(input);
 
     let mut sum = 0;
@@ -13,7 +13,7 @@ fn part1(input: &str) -> isize {
     sum
 }
 
-fn part2(input: &str) -> isize {
+pub fn part2(input: &str) -> isize {
     let equations = parse_input(input);
 
     let mut sum = 0;

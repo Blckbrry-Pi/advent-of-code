@@ -1,12 +1,12 @@
 aoc_tools::aoc_sol!(day09: part1, part2);
 
-fn part1(input: &str) -> usize {
+pub fn part1(input: &str) -> usize {
     let mut filesystem = parse_input(input);
     filesystem.compact();
     filesystem.checksum()
 }
 
-fn part2(input: &str) -> usize {
+pub fn part2(input: &str) -> usize {
     let mut filesystem = parse_input(input);
     filesystem.compact_p2();
     filesystem.checksum()

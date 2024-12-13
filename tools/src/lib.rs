@@ -39,6 +39,35 @@ macro_rules! aoc_sol {
 }
 
 #[macro_export]
+macro_rules! day_bench {
+    ($day:ident) => {
+        mod $day {
+            use criterion::{black_box, criterion_group, Criterion};
+
+            const INPUT: &str = include_str!(concat!("../../data/", stringify!($day), "/input.txt"));
+
+            fn p1(c: &mut criterion::Criterion) {
+                let number = stringify!($day).trim_start_matches("day");
+                let name = format!("Day {number} Part 1");
+                c.bench_function(&name, |b| b.iter(|| ::$day::part1(black_box(INPUT))));
+            }
+
+            fn p2(c: &mut criterion::Criterion) {
+                let number = stringify!($day).trim_start_matches("day");
+                let name = format!("Day {number} Part 2");
+                c.bench_function(&name, |b| b.iter(|| ::$day::part2(black_box(INPUT))));
+            }
+
+            criterion_group! {
+                name = $day;
+                config = Criterion::default().measurement_time(std::time::Duration::from_secs(20));
+                targets = p1, p2
+            }
+        }
+    };
+}
+
+#[macro_export]
 macro_rules! pos {
     ($inner_type:ty) => {
         #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]

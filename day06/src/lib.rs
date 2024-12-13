@@ -1,7 +1,7 @@
 aoc_tools::aoc_sol!(day06: part1, part2);
 aoc_tools::fast_hash!();
 
-fn part1(input: &str) -> usize {
+pub fn part1(input: &str) -> usize {
     let mut map = parse_input(input);
 
     while map.guard_in_bounds() {
@@ -12,7 +12,7 @@ fn part1(input: &str) -> usize {
     map.explored_in_bounds().len()
 }
 
-fn part2(input: &str) -> usize {
+pub fn part2(input: &str) -> usize {
     let template_map = parse_input(input);
 
     let explored_in_bounds = {

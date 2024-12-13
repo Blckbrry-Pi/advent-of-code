@@ -1,6 +1,6 @@
 aoc_tools::aoc_sol!(day02: part1, part2);
 
-fn part1(input: &str) -> i32 {
+pub fn part1(input: &str) -> i32 {
     let rows = parse_input(input);
     
     let mut safe_count = 0;
@@ -28,7 +28,7 @@ fn part1(input: &str) -> i32 {
     safe_count
 }
 
-fn part2(input: &str) -> i32 {
+pub fn part2(input: &str) -> i32 {
     let rows = parse_input(input);
     
     let mut safe_count = 0;

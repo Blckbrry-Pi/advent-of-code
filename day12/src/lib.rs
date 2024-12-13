@@ -2,14 +2,14 @@ use std::rc::Rc;
 
 aoc_tools::aoc_sol!(day12: part1, part2);
 
-fn part1(input: &str) -> u64 {
+pub fn part1(input: &str) -> u64 {
     let mut garden = parse_input(input);
 
     garden.calc_area_perimeter();
     garden.calc_total_p1()
 }
 
-fn part2(input: &str) -> u64 {
+pub fn part2(input: &str) -> u64 {
     let mut garden = parse_input(input);
 
     garden.calc_area_perimeter();

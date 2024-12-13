@@ -1,13 +1,13 @@
 aoc_tools::aoc_sol!(day08: part1, part2);
 
-fn part1(input: &str) -> usize {
+pub fn part1(input: &str) -> usize {
     let map = parse_input(input);
 
     let all_antinodes: HashSet<_> = map.all_antinodes_p1().values().flatten().copied().collect();
     all_antinodes.len()
 }
 
-fn part2(input: &str) -> usize {
+pub fn part2(input: &str) -> usize {
     let map = parse_input(input);
 
     let all_antinodes: HashSet<_> = map.all_antinodes_p2().values().flatten().copied().collect();

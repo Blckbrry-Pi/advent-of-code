@@ -2,7 +2,7 @@ use std::str::FromStr;
 
 aoc_tools::aoc_sol!(day05: part1, part2);
 
-fn part1(input: &str) -> u16 {
+pub fn part1(input: &str) -> u16 {
     let (requirements, updates) = parse_input(input);
 
     let mut sum = 0;
@@ -15,7 +15,7 @@ fn part1(input: &str) -> u16 {
     sum
 }
 
-fn part2(input: &str) -> u16 {
+pub fn part2(input: &str) -> u16 {
     let (requirements, updates) = parse_input(input);
     let lut = Update::build_requirement_lut(&requirements);
 

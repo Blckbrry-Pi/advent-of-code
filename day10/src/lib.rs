@@ -1,6 +1,6 @@
 aoc_tools::aoc_sol!(day10: part1, part2);
 
-fn part1(input: &str) -> usize {
+pub fn part1(input: &str) -> usize {
     let topography = parse_input(input);
 
     let trailheads: Vec<_> = topography.trailheads()
@@ -11,7 +11,7 @@ fn part1(input: &str) -> usize {
     trailheads.iter().copied().sum()
 }
 
-fn part2(input: &str) -> usize {
+pub fn part2(input: &str) -> usize {
     let topography = parse_input(input);
 
     let trailheads: Vec<_> = topography.trailheads()

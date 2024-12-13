@@ -1,13 +1,13 @@
 aoc_tools::aoc_sol!(day11: part1, part2);
 
-fn part1(input: &str) -> u64 {
+pub fn part1(input: &str) -> u64 {
     let mut rocks = parse_input(input);
     for _ in 0..25 { rocks = Rock::blink_all(&rocks); }
 
     Rock::size(&rocks)
 }
 
-fn part2(input: &str) -> u64 {
+pub fn part2(input: &str) -> u64 {
     let mut rocks = parse_input(input);
     for _ in 0..75 { rocks = Rock::blink_all(&rocks); }
 

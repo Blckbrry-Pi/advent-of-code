@@ -6,7 +6,7 @@ use pair::Pair;
 
 aoc_tools::aoc_sol!(day01: part1, part2);
 
-fn part1(input: &str) -> i32 {
+pub fn part1(input: &str) -> i32 {
     let (mut left, mut right) = parse_input(input);
 
     left.sort();
@@ -15,7 +15,7 @@ fn part1(input: &str) -> i32 {
     zipped(left, right).map(diffed).sum()
 }
 
-fn part2(input: &str) -> i32 {
+pub fn part2(input: &str) -> i32 {
     let (left, right) = parse_input(input);
     let right_counts = Count::from_list(&right);
 

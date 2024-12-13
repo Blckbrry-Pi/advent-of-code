@@ -39,14 +39,14 @@ const X_MAS: Pattern = matching_pattern![
     [_, _, _, _, _]
 ];
 
-fn part1(input: &str) -> usize {
+pub fn part1(input: &str) -> usize {
     const ROTATIONS: &[usize] = &[0, 1, 2, 3, 4, 5, 6, 7];
 
     let field = parse_input(input);
     find_5x5_with_rotations(&field, XMAS, &ROTATIONS).len()
 }
 
-fn part2(input: &str) -> usize {
+pub fn part2(input: &str) -> usize {
     const ROTATIONS: &[usize] = &[0, 2, 4, 6];
 
     let field = parse_input(input);

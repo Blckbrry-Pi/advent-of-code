@@ -1,6 +1,6 @@
 aoc_tools::aoc_sol!(day03: part1, part2);
 
-fn part1(input: &str) -> i64 {
+pub fn part1(input: &str) -> i64 {
     let instructions = parse_input(input);
 
     let mult = instructions.iter()
@@ -12,7 +12,7 @@ fn part1(input: &str) -> i64 {
     mult.map(|(l, r)| l * r).sum()
 }
 
-fn part2(input: &str) -> i64 {
+pub fn part2(input: &str) -> i64 {
     let instructions = parse_input(input);
 
     let (sum, _enabled) = instructions.into_iter()
