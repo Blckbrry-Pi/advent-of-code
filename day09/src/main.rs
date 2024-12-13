@@ -107,21 +107,19 @@ impl FileSystem {
     }
 
     fn compact_p2(&mut self) {
-        let mut ignored = HashSet::new();
+        let mut max_file_idx = self.blocks.len();
+        let mut insertions = HashMap::<usize, Vec<Block>>::new();
 
         loop {
-            let mut file_iter = self.blocks.iter()
-                .copied()
-                .enumerate()
-                .rev()
-                .filter_map(
-                    |(idx, file)| file.file()
-                        .and_then(
-                            |(size, id)| (!ignored.contains(&id)).then_some((idx, (size, id)))
-                        )
-                );
+            let mut file = None;
+            for idx in (0..max_file_idx.min(self.blocks.len())).rev() {
+                let Some((size, id)) = self.blocks[idx].file() else { continue };
+                file = Some((idx, (size, id)));
+                break;
+            }
 
-            if let Some((file_idx, (file_size, id))) = file_iter.next() {
+            if let Some((file_idx, (file_size, id))) = file {
+                max_file_idx = file_idx;
                 let mut curr_free_idx = 0;
                 while let Some((free_idx, free_size)) = self.next_free_block_idx(curr_free_idx + 1) {
                     if free_idx >= file_idx { break; }
@@ -129,25 +127,28 @@ impl FileSystem {
                     if free_size >= file_size {
                         self.blocks[file_idx] = Block::Free { size: file_size };
                         self.blocks[free_idx] = Block::Free { size: free_size - file_size };
-                        self.blocks.insert(free_idx, Block::File { size: file_size, id });
+                        insertions.entry(free_idx).or_default().push(Block::File { size: file_size, id });
                         break;
                     }
 
                     curr_free_idx = free_idx;
                 }
-                ignored.insert(id);
             } else {
                 break
             }
         }
-        // to_add.sort_by(|a, b| a.0.cmp(&b.0));
 
-        // for (idx, (size, id)) in to_add {
-        //     self.blocks.insert(idx, Block::File { id, size });
-        // }
+        self.blocks = self.blocks.iter()
+            .copied()
+            .enumerate()
+            .flat_map(|(i, block)| if let Some(blocks) = insertions.remove(&i) {
+                blocks.into_iter().chain([block])
+            } else {
+                vec![].into_iter().chain([block])
+            })
+            .collect();
 
         self.combine_adjacent_frees_and_remove_trailing();
-
     }
 
     fn combine_adjacent_frees_and_remove_trailing(&mut self) {

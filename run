@@ -27,6 +27,13 @@ if [ "$release" = "release" ]; then
     CMD="$CMD --release"
 fi
 
+if [ "$release" = "nobuild" ]; then
+    if [ "$$CARGO_TARGET_DIR" = "" ]; then
+        CARGO_TARGET_DIR="target"
+    fi
+    CMD="./$CARGO_TARGET_DIR/release/$binaryname"
+fi
+
 echo "Year $year_with_default, Day $day"
 $CMD
 echo

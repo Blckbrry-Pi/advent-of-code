@@ -1,4 +1,5 @@
 aoc_tools::aoc_sol!(day06: part1, part2);
+aoc_tools::fast_hash!();
 
 fn part1(input: &str) -> usize {
     let mut map = parse_input(input);
@@ -15,7 +16,7 @@ fn part2(input: &str) -> usize {
     let template_map = parse_input(input);
 
     let explored_in_bounds = {
-        let mut map = template_map.clone();
+        let mut map = template_map.clone().ensure_guard_states_capacity();
 
         while map.guard_in_bounds() {
             map.step();
@@ -30,15 +31,18 @@ fn part2(input: &str) -> usize {
     };
 
     let mut loops = vec![];
+    let mut map = template_map.clone();
     for pos in explored_in_bounds.iter().copied() {
         if template_map.guard.loc == pos { continue }
 
-        let mut map = template_map.clone();
+        // let mut map = template_map.clone().ensure_guard_states_capacity();
+        map.guard_states.clear();
+        map.guard = template_map.guard;
         map.cells[pos.y as usize][pos.x as usize] = Cell::NewObstructed;
 
         while map.guard_in_bounds() {
             if map.step() {
-                if map.guard_state_seen_before() > 2 {
+                if map.guard_state_seen_before() > 0 {
                     loops.push(pos);
                     break
                 } else {
@@ -46,6 +50,7 @@ fn part2(input: &str) -> usize {
                 }
             }
         }
+        map.cells[pos.y as usize][pos.x as usize] = Cell::Clear;
     }
 
     loops.len()
@@ -77,16 +82,21 @@ fn parse_input(input: &str) -> Map {
         cells,
         guard,
         guard_states: [(guard, 1)].into_iter().collect(),
-    }
+    }.ensure_guard_states_capacity()
 }
 
 #[derive(Clone, PartialEq, Eq)]
 pub struct Map {
     cells: Vec<Vec<Cell>>,
     guard: Guard,
-    guard_states: HashMap<Guard, usize>,
+    guard_states: FastMap<Guard, usize>,
 }
 impl Map {
+    pub fn ensure_guard_states_capacity(mut self) -> Self {
+        let assumed_max = self.cols() * self.rows() / 128;
+        self.guard_states.reserve(assumed_max.saturating_sub(self.guard_states.len()));
+        self
+    }
     pub fn rows(&self) -> usize {
         self.cells.len()
     }

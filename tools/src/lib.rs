@@ -78,6 +78,37 @@ macro_rules! pos {
     };
 }
 
+#[macro_export]
+macro_rules! fast_hash {
+    () => {
+        #[allow(dead_code)]
+        pub use $crate::__hidden_hasher::*;
+    };
+}
+
+pub mod __hidden_hasher {
+    use std::collections::{ HashSet, HashMap };
+
+    // type HashBuilder = xxhash_rust::xxh3::Xxh3Builder;
+    type HashBuilder = std::hash::RandomState;
+
+    pub type FastMap<K, V> = HashMap<K, V, HashBuilder>;
+    pub fn new_fastmap<K, V>() -> FastMap<K, V> {
+        HashMap::with_hasher(HashBuilder::new())
+    }
+    pub fn new_fastmap_with_capacity<K, V>(capacity: usize) -> FastMap<K, V> {
+        HashMap::with_capacity_and_hasher(capacity, HashBuilder::new())
+    }
+
+    pub type FastSet<T> = HashSet<T, HashBuilder>;
+    pub fn new_fastset<T>() -> FastSet<T> {
+        HashSet::with_hasher(HashBuilder::new())
+    }
+    pub fn new_fastset_with_capacity<T>(capacity: usize) -> FastSet<T> {
+        HashSet::with_capacity_and_hasher(capacity, HashBuilder::new())
+    }
+}
+
 pub fn get_cookie() -> String {
     std::fs::read_to_string(".aoc_cookie").unwrap()
 }
