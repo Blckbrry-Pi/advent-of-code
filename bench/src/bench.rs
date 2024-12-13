@@ -12,6 +12,7 @@ aoc_tools::day_bench!(day09);
 aoc_tools::day_bench!(day10);
 aoc_tools::day_bench!(day11);
 aoc_tools::day_bench!(day12);
+aoc_tools::day_bench!(day13);
 
 criterion_main!(
     day01::day01,
@@ -26,4 +27,5 @@ criterion_main!(
     day10::day10,
     day11::day11,
     day12::day12,
+    day13::day13,
 );
