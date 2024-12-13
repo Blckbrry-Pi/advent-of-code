@@ -1,14 +1,7 @@
-fn main() {
-    part1();
-    part2();
-}
+aoc_tools::aoc_sol!(day02: part1, part2);
 
-#[allow(dead_code)]
-const TEST: &str = include_str!("../../data/day02/test.txt");
-const INPUT: &str = include_str!("../../data/day02/input.txt");
-
-fn part1() {
-    let rows = parse_input(INPUT);
+fn part1(input: &str) -> i32 {
+    let rows = parse_input(input);
     
     let mut safe_count = 0;
     for row in rows {
@@ -31,12 +24,12 @@ fn part1() {
             safe_count += 1;
         }
     }
-
-    println!("Part 1: {}", safe_count);
+    
+    safe_count
 }
 
-fn part2() {
-    let rows = parse_input(INPUT);
+fn part2(input: &str) -> i32 {
+    let rows = parse_input(input);
     
     let mut safe_count = 0;
     for row in rows {
@@ -64,8 +57,8 @@ fn part2() {
             }
         }
     }
-
-    println!("Part 2: {}", safe_count);
+    
+    safe_count
 }
 
 fn parse_input(input: &str) -> Vec<Vec<i32>> {

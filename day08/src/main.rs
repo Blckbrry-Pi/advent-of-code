@@ -1,33 +1,17 @@
-use std::collections::{HashMap, HashSet};
-use std::fmt::Debug;
+aoc_tools::aoc_sol!(day08: part1, part2);
 
-fn main() {
-    part1();
-    part2();
-}
-
-#[allow(dead_code)]
-const TEST: &str = include_str!("../../data/day08/test.txt");
-const INPUT: &str = include_str!("../../data/day08/input.txt");
-
-fn part1() {
-    let start = std::time::Instant::now();
-    let map = parse_input(INPUT);
+fn part1(input: &str) -> usize {
+    let map = parse_input(input);
 
     let all_antinodes: HashSet<_> = map.all_antinodes_p1().values().flatten().copied().collect();
-    let out = all_antinodes.len();
-
-    println!("Part 1: {} ({:?})", out, start.elapsed());
+    all_antinodes.len()
 }
 
-fn part2() {
-    let start = std::time::Instant::now();
-    let map = parse_input(INPUT);
+fn part2(input: &str) -> usize {
+    let map = parse_input(input);
 
     let all_antinodes: HashSet<_> = map.all_antinodes_p2().values().flatten().copied().collect();
-    let out = all_antinodes.len();
-
-    println!("Part 2: {} ({:?})", out, start.elapsed());
+    all_antinodes.len()
 }
 
 fn parse_input(input: &str) -> Map {
@@ -80,17 +64,16 @@ impl Map {
     }
     pub fn antinodes_for_p2(&self, a: Pos, b: Pos) -> impl Iterator<Item = Pos> {
         let step_a = a.sub(b).simplify();
-        let step_b = b.sub(a).simplify();
+        let step_b = b.sub(a).simplify();        
 
         let mut positions = HashSet::new();
-
-        let mut test_a = step_a;
+        let mut test_a = a;
         while self.has_pos(test_a) {
             positions.insert(test_a);
             test_a = test_a.add(step_a);
         }
 
-        let mut test_b = step_b;
+        let mut test_b = b;
         while self.has_pos(test_b) {
             positions.insert(test_b);
             test_b = test_b.add(step_b);
@@ -174,28 +157,9 @@ impl Debug for Freq {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-struct Pos { x: isize, y: isize }
+aoc_tools::pos!(isize);
 
 impl Pos {
-    pub fn add(&self, o: Self) -> Self {
-        Self {
-            x: self.x + o.x,
-            y: self.y + o.y
-        }
-    }
-
-    pub fn neg(&self) -> Self {
-        Self {
-            x: -self.x,
-            y: -self.y
-        }
-    }
-
-    pub fn sub(&self, o: Self) -> Self {
-        self.add(o.neg())
-    }
-
     pub fn simplify(&self) -> Self {
         fn gcd(a: isize, b: isize) -> isize {
             if b == 0 {

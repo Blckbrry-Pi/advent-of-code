@@ -1,39 +1,25 @@
-use std::collections::HashSet;
-use std::fmt::Debug;
+aoc_tools::aoc_sol!(day10: part1, part2);
 
-fn main() {
-    part1();
-    part2();
-}
-
-#[allow(dead_code)]
-const TEST: &str = include_str!("../../data/day10/test.txt");
-const INPUT: &str = include_str!("../../data/day10/input.txt");
-
-fn part1() {
-    let start = std::time::Instant::now();
-    let topography = parse_input(INPUT);
+fn part1(input: &str) -> usize {
+    let topography = parse_input(input);
 
     let trailheads: Vec<_> = topography.trailheads()
         .map(|head| get_9s(head, &topography))
         .map(|nines| nines.len())
         .collect();
 
-    let out: usize = trailheads.iter().copied().sum();
-    println!("Part 1: {} ({:?})", out, start.elapsed());
+    trailheads.iter().copied().sum()
 }
 
-fn part2() {
-    let start = std::time::Instant::now();
-    let topography = parse_input(INPUT);
+fn part2(input: &str) -> usize {
+    let topography = parse_input(input);
 
     let trailheads: Vec<_> = topography.trailheads()
         .map(|head| get_9s_paths(head, &topography))
         .map(|nines| nines.len())
         .collect();
 
-    let out: usize = trailheads.iter().copied().sum();
-    println!("Part 2: {} ({:?})", out, start.elapsed());
+    trailheads.iter().copied().sum()
 }
 
 fn get_9s(start: Pos, topography: &Topography) -> HashSet<Pos> {

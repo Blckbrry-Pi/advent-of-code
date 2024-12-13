@@ -1,39 +1,15 @@
-use std::collections::HashSet;
-use std::fmt::Debug;
+aoc_tools::aoc_sol!(day09: part1, part2);
 
-fn main() {
-    part1();
-    part2();
-}
-
-#[allow(dead_code)]
-const TEST: &str = include_str!("../../data/day09/test.txt");
-const INPUT: &str = include_str!("../../data/day09/input.txt");
-
-fn part1() {
-    let start = std::time::Instant::now();
-    let mut filesystem = parse_input(INPUT);
-
-    // println!("{filesystem:#?}");
-
+fn part1(input: &str) -> usize {
+    let mut filesystem = parse_input(input);
     filesystem.compact();
-    // println!("{filesystem:#?}");
-
-    let out = filesystem.checksum();
-    println!("Part 1: {} ({:?})", out, start.elapsed());
+    filesystem.checksum()
 }
 
-fn part2() {
-    let start = std::time::Instant::now();
-    let mut filesystem = parse_input(INPUT);
-
-    // println!("{filesystem:#?}");
-
+fn part2(input: &str) -> usize {
+    let mut filesystem = parse_input(input);
     filesystem.compact_p2();
-    // println!("{filesystem:#?}");
-
-    let out = filesystem.checksum();
-    println!("Part 2: {} ({:?})", out, start.elapsed());
+    filesystem.checksum()
 }
 
 fn parse_input(input: &str) -> FileSystem {
@@ -130,58 +106,10 @@ impl FileSystem {
         }
     }
 
-    // fn compact_p2(&mut self) {
-    //     let mut min_free_idx = 0;
-    //     while let Some((idx, free_size)) = self.next_free_block_idx(min_free_idx) {
-    //         min_free_idx = idx + 1;
-    //         println!("{self:#?}");
-            
-    //         self.combine_adjacent_frees_and_remove_trailing();
-    //         println!("{self:#?}");
-
-    //         println!();
-
-    //         let files_reverse = self.blocks.iter()
-    //             .enumerate()
-    //             .flat_map(|(idx, file)| file.file().map(|f| (idx, f)))
-    //             .rev();
-    //         for (file_idx, (size, id)) in files_reverse {
-    //             if file_idx < idx { continue; }
-    //             if idx == file_idx - 1 {
-    //                 let temp = self.blocks[idx];
-    //                 self.blocks[idx] = self.blocks[file_idx];
-    //                 self.blocks[file_idx] = temp;
-    //                 break;
-    //             } else if size <= free_size {
-    //                 self.blocks[idx] = Block::Free { size: free_size - size };
-    //                 self.blocks[file_idx] = Block::Free { size };
-    //                 if size < free_size {
-    //                     self.blocks.insert(idx, Block::File { id, size });
-    //                 } else {
-    //                     self.blocks[idx] = Block::File { id, size };
-    //                 }
-    //                 break;
-    //             }
-    //         }
-
-    //         // Remove 0 sized frees before min_free_idx
-    //         self.blocks = self.blocks.iter()
-    //             .copied()
-    //             .enumerate()
-    //             .filter_map(|(i, block)| 
-    //                 (block.free() != Some(0) || i >= min_free_idx)
-    //                     .then_some(block)
-    //             ).collect();
-    //     }
-    // }
-
     fn compact_p2(&mut self) {
         let mut ignored = HashSet::new();
-        // let mut to_add = vec![];
 
         loop {
-            // println!("{self:#?}");
-            // println!("{}", self.canonical_representation());
             let mut file_iter = self.blocks.iter()
                 .copied()
                 .enumerate()

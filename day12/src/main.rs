@@ -1,33 +1,20 @@
-use std::collections::{HashMap, HashSet};
-use std::fmt::Debug;
 use std::rc::Rc;
 
-fn main() {
-    part1();
-    part2();
-}
+aoc_tools::aoc_sol!(day12: part1, part2);
 
-#[allow(dead_code)]
-const TEST: &str = include_str!("../../data/day12/test.txt");
-const INPUT: &str = include_str!("../../data/day12/input.txt");
-
-fn part1() {
-    let start = std::time::Instant::now();
-    let mut garden = parse_input(INPUT);
+fn part1(input: &str) -> u64 {
+    let mut garden = parse_input(input);
 
     garden.calc_area_perimeter();
-    let out = garden.calc_total_p1();
-    println!("Part 1: {} ({:?})", out, start.elapsed());
+    garden.calc_total_p1()
 }
 
-fn part2() {
-    let start = std::time::Instant::now();
-    let mut garden = parse_input(INPUT);
+fn part2(input: &str) -> u64 {
+    let mut garden = parse_input(input);
 
     garden.calc_area_perimeter();
     garden.calc_sides();
-    let out = garden.calc_total_p2();
-    println!("Part 2: {} ({:?})", out, start.elapsed());
+    garden.calc_total_p2()
 }
 
 fn parse_input(input: &str) -> Garden {

@@ -1,31 +1,18 @@
-use std::collections::{HashMap, HashSet};
-use std::fmt::Debug;
+aoc_tools::aoc_sol!(day06: part1, part2);
 
-fn main() {
-    part1();
-    part2();
-}
-
-#[allow(dead_code)]
-const TEST: &str = include_str!("../../data/day06/test.txt");
-const INPUT: &str = include_str!("../../data/day06/input.txt");
-
-fn part1() {
-    let start = std::time::Instant::now();
-    let mut map = parse_input(INPUT);
+fn part1(input: &str) -> usize {
+    let mut map = parse_input(input);
 
     while map.guard_in_bounds() {
         map.step();
         map.log_guard_state();
     }
 
-    let out = map.explored_in_bounds().len();
-    println!("Part 1: {} ({:?})", out, start.elapsed());
+    map.explored_in_bounds().len()
 }
 
-fn part2() {
-    let start = std::time::Instant::now();
-    let template_map = parse_input(INPUT);
+fn part2(input: &str) -> usize {
+    let template_map = parse_input(input);
 
     let explored_in_bounds = {
         let mut map = template_map.clone();
@@ -61,7 +48,7 @@ fn part2() {
         }
     }
 
-    println!("Part 2: {} ({:?})", loops.len(), start.elapsed());
+    loops.len()
 }
 
 fn parse_input(input: &str) -> Map {

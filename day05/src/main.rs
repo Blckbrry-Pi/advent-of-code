@@ -1,17 +1,9 @@
-use std::{ collections::HashMap, str::FromStr };
+use std::str::FromStr;
 
-fn main() {
-    part1();
-    part2();
-}
+aoc_tools::aoc_sol!(day05: part1, part2);
 
-#[allow(dead_code)]
-const TEST: &str = include_str!("../../data/day05/test.txt");
-const INPUT: &str = include_str!("../../data/day05/input.txt");
-
-fn part1() {
-    let start = std::time::Instant::now();
-    let (requirements, updates) = parse_input(INPUT);
+fn part1(input: &str) -> u16 {
+    let (requirements, updates) = parse_input(input);
 
     let mut sum = 0;
     for update in updates {
@@ -20,12 +12,11 @@ fn part1() {
         }
     }
 
-    println!("Part 1: {} ({:?})", sum, start.elapsed());
+    sum
 }
 
-fn part2() {
-    let start = std::time::Instant::now();
-    let (requirements, updates) = parse_input(INPUT);
+fn part2(input: &str) -> u16 {
+    let (requirements, updates) = parse_input(input);
     let lut = Update::build_requirement_lut(&requirements);
 
     let mut sum = 0;
@@ -36,7 +27,7 @@ fn part2() {
         }
     }
 
-    println!("Part 2: {} ({:?})", sum, start.elapsed());
+    sum
 }
 
 fn parse_input(input: &str) -> (Vec<Requirement>, Vec<Update>) {

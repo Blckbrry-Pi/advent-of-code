@@ -1,30 +1,17 @@
-use std::collections::HashMap;
+aoc_tools::aoc_sol!(day11: part1, part2);
 
-fn main() {
-    part1();
-    part2();
-}
-
-#[allow(dead_code)]
-const TEST: &str = include_str!("../../data/day11/test.txt");
-const INPUT: &str = include_str!("../../data/day11/input.txt");
-
-fn part1() {
-    let start = std::time::Instant::now();
-    let mut rocks = parse_input(INPUT);
+fn part1(input: &str) -> u64 {
+    let mut rocks = parse_input(input);
     for _ in 0..25 { rocks = Rock::blink_all(&rocks); }
 
-    let out = Rock::size(&rocks);
-    println!("Part 1: {} ({:?})", out, start.elapsed());
+    Rock::size(&rocks)
 }
 
-fn part2() {
-    let start = std::time::Instant::now();
-    let mut rocks = parse_input(INPUT);
+fn part2(input: &str) -> u64 {
+    let mut rocks = parse_input(input);
     for _ in 0..75 { rocks = Rock::blink_all(&rocks); }
 
-    let out = Rock::size(&rocks);
-    println!("Part 2: {} ({:?})", out, start.elapsed());
+    Rock::size(&rocks)
 }
 
 fn parse_input(input: &str) -> HashMap<Rock, u64> {

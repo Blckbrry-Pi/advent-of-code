@@ -1,6 +1,8 @@
 [workspace]
 
 members = [
+    "tools",
+
     # 2024
     "day01", "day02", "day03", "day04", "day05",
     "day06", "day07", "day08", "day09", "day10",
@@ -16,5 +18,5 @@ members = [
     "2019/day01", "2019/day02", "2019/day03", "2019/day04", "2019/day05",
     "2019/day06",                             "2019/day09",
                                               "2019/day19",
-    "2019/day21",               "2019/day23",               "2019/day25",
+    "2019/day21",               "2019/day23",               "2019/day25", "tools",
 ]

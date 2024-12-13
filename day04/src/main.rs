@@ -1,3 +1,5 @@
+aoc_tools::aoc_sol!(day04: part1, part2);
+
 macro_rules! matching_pattern {
     (@impl _) => { None };
     (@impl X) => { Some(Letter::X) };
@@ -21,15 +23,6 @@ macro_rules! matching_pattern {
     };
 }
 
-fn main() {
-    part1();
-    part2();
-}
-
-#[allow(dead_code)]
-const TEST: &str = include_str!("../../data/day04/test.txt");
-const INPUT: &str = include_str!("../../data/day04/input.txt");
-
 const XMAS: Pattern = matching_pattern![
     [X, _, _, _, _]
     [_, M, _, _, _]
@@ -46,22 +39,18 @@ const X_MAS: Pattern = matching_pattern![
     [_, _, _, _, _]
 ];
 
-fn part1() {
+fn part1(input: &str) -> usize {
     const ROTATIONS: &[usize] = &[0, 1, 2, 3, 4, 5, 6, 7];
 
-    let field = parse_input(INPUT);
-    let matches_found = find_5x5_with_rotations(&field, XMAS, &ROTATIONS).len();
-
-    println!("Part 1: {}", matches_found);
+    let field = parse_input(input);
+    find_5x5_with_rotations(&field, XMAS, &ROTATIONS).len()
 }
 
-fn part2() {
+fn part2(input: &str) -> usize {
     const ROTATIONS: &[usize] = &[0, 2, 4, 6];
 
-    let field = parse_input(INPUT);
-    let matches_found = find_5x5_with_rotations(&field, X_MAS, &ROTATIONS).len();
-
-    println!("Part 2: {}", matches_found);
+    let field = parse_input(input);
+    find_5x5_with_rotations(&field, X_MAS, &ROTATIONS).len()
 }
 
 fn parse_input(input: &str) -> Vec<Vec<Letter>> {

@@ -1,14 +1,7 @@
-fn main() {
-    part1();
-    part2();
-}
+aoc_tools::aoc_sol!(day03: part1, part2);
 
-#[allow(dead_code)]
-const TEST: &str = include_str!("../../data/day03/test.txt");
-const INPUT: &str = include_str!("../../data/day03/input.txt");
-
-fn part1() {
-    let instructions = parse_input(INPUT);
+fn part1(input: &str) -> i64 {
+    let instructions = parse_input(input);
 
     let mult = instructions.iter()
         .copied()
@@ -16,13 +9,11 @@ fn part1() {
             Instruction::Mul(l, r) => Some((l, r)),
             _ => None,
         });
-    let sum: i64 = mult.map(|(l, r)| l * r).sum();
-
-    println!("Part 1: {}", sum);
+    mult.map(|(l, r)| l * r).sum()
 }
 
-fn part2() {
-    let instructions = parse_input(INPUT);
+fn part2(input: &str) -> i64 {
+    let instructions = parse_input(input);
 
     let (sum, _enabled) = instructions.into_iter()
         .fold((0, true), |(sum, enabled), instruction| {
@@ -33,7 +24,7 @@ fn part2() {
             }
         });
 
-    println!("Part 2: {}", sum);
+    sum
 }
 
 fn parse_input(input: &str) -> Vec<Instruction> {

@@ -4,33 +4,22 @@ mod count;
 use count::Count;
 use pair::Pair;
 
-fn main() {
-    part1();
-    part2();
-}
+aoc_tools::aoc_sol!(day01: part1, part2);
 
-#[allow(dead_code)]
-const TEST: &str = include_str!("../../data/day01/test.txt");
-const INPUT: &str = include_str!("../../data/day01/input.txt");
-
-fn part1() {
-    let (mut left, mut right) = parse_input(INPUT);
+fn part1(input: &str) -> i32 {
+    let (mut left, mut right) = parse_input(input);
 
     left.sort();
     right.sort();
 
-    let sum: i32 = zipped(left, right).map(diffed).sum();
-
-    println!("Part 1: {}", sum);
+    zipped(left, right).map(diffed).sum()
 }
 
-fn part2() {
-    let (left, right) = parse_input(INPUT);
+fn part2(input: &str) -> i32 {
+    let (left, right) = parse_input(input);
     let right_counts = Count::from_list(&right);
 
-    let sum: i32 = left.into_iter().map(|v| v * right_counts.count(v)).sum();
-
-    println!("Part 2: {}", sum);
+    left.into_iter().map(|v| v * right_counts.count(v)).sum()
 }
 
 fn parse_input(input: &str) -> (Vec<i32>, Vec<i32>) {
@@ -47,4 +36,4 @@ pub fn zipped<L, R>(left: impl IntoIterator<Item = L>, right: impl IntoIterator<
     left.into_iter().zip(right)
 }
 
-pub fn diffed((l, r): (i32, i32)) -> i32 { l - r }
+pub fn diffed((l, r): (i32, i32)) -> i32 { (l - r).abs() }

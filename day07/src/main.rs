@@ -1,15 +1,7 @@
-fn main() {
-    part1();
-    part2();
-}
+aoc_tools::aoc_sol!(day07: part1, part2);
 
-#[allow(dead_code)]
-const TEST: &str = include_str!("../../data/day07/test.txt");
-const INPUT: &str = include_str!("../../data/day07/input.txt");
-
-fn part1() {
-    let start = std::time::Instant::now();
-    let equations = parse_input(INPUT);
+fn part1(input: &str) -> isize {
+    let equations = parse_input(input);
 
     let mut sum = 0;
     for equation in equations {
@@ -18,12 +10,11 @@ fn part1() {
         }
     }
 
-    println!("Part 1: {sum} ({:?})", start.elapsed());
+    sum
 }
 
-fn part2() {
-    let start = std::time::Instant::now();
-    let equations = parse_input(INPUT);
+fn part2(input: &str) -> isize {
+    let equations = parse_input(input);
 
     let mut sum = 0;
     for equation in equations {
@@ -32,7 +23,7 @@ fn part2() {
         }
     }
 
-    println!("Part 2: {sum} ({:?})", start.elapsed());
+    sum
 }
 
 fn parse_input(input: &str) -> Vec<Equation> {
