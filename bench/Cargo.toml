@@ -22,6 +22,11 @@ criterion = { version = "0.4", features = ["html_reports"] }
 aoc_tools = { version = "0.1.0", path = "../tools" }
 
 [[bench]]
+name = "separate"
+path = "src/separate_bench.rs"
+harness = false
+
+[[bench]]
 name = "2024"
-path = "src/bench.rs"
+path = "src/bench2024.rs"
 harness = false

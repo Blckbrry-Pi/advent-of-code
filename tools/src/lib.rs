@@ -49,19 +49,52 @@ macro_rules! day_bench {
             fn p1(c: &mut criterion::Criterion) {
                 let number = stringify!($day).trim_start_matches("day");
                 let name = format!("Day {number} Part 1");
-                c.bench_function(&name, |b| b.iter(|| ::$day::part1(black_box(INPUT))));
+                c.bench_function(&name, |b| b.iter(|| ::$day::part1(black_box(INPUT.trim()))));
             }
 
             fn p2(c: &mut criterion::Criterion) {
                 let number = stringify!($day).trim_start_matches("day");
                 let name = format!("Day {number} Part 2");
-                c.bench_function(&name, |b| b.iter(|| ::$day::part2(black_box(INPUT))));
+                c.bench_function(&name, |b| b.iter(|| ::$day::part2(black_box(INPUT.trim()))));
             }
 
             criterion_group! {
                 name = $day;
                 config = Criterion::default().measurement_time(std::time::Duration::from_secs(20));
                 targets = p1, p2
+            }
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! multi_day_bench {
+    ($multiday_name:ident: $($day:ident),+ $(,)?) => {
+        mod $multiday_name {
+            use criterion::{black_box, criterion_group, Criterion};
+
+            const INPUT_COUNT: u64 = [$(stringify!($day),)+].len() as u64;
+            #[allow(non_upper_case_globals)]
+            mod inputs {
+                $(
+                    pub const $day: &str = include_str!(concat!("../../data/", stringify!($day), "/input.txt"));
+                )+
+            }
+
+            fn multiday_fn(c: &mut criterion::Criterion) {
+                let name = concat!("Multiday ", stringify!($multiday_name));
+                c.bench_function(name, |b| b.iter(|| {
+                    $(
+                        ::$day::part1(black_box(inputs::$day.trim()));
+                        ::$day::part2(black_box(inputs::$day.trim()));
+                    )+
+                }));
+            }
+
+            criterion_group! {
+                name = $multiday_name;
+                config = Criterion::default().measurement_time(std::time::Duration::from_secs(INPUT_COUNT * 10));
+                targets = multiday_fn
             }
         }
     };
