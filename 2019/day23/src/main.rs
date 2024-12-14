@@ -1,9 +1,6 @@
 use std::time::Instant;
 
-use instruction::Instruction;
-use machine::Machine;
-mod instruction;
-mod machine;
+use intcode_2019::{ parse_program, Machine };
 
 fn main() {
     part1();
@@ -16,7 +13,7 @@ const INPUT: &str = include_str!("../../../data/2019/day23/input.txt");
 
 fn part1() {
     let start = Instant::now();
-    let data = parse_input(INPUT);
+    let data = parse_program(INPUT, 256);
 
     let mut machines: Vec<(Machine, Vec<isize>)> = (0..50).map(|v| (
         Machine::new(vec![v]),
@@ -28,15 +25,13 @@ fn part1() {
     while output.is_none() {
         let mut packets = vec![];
         for (machine, data) in machines.iter_mut() {
-            if machine.input.is_empty() {
-                machine.input.push(-1);
+            if machine.input.0.is_empty() {
+                machine.input.0.push(-1);
             }
 
             if machine.halt { continue }
 
-            if let Some(instruction) = Instruction::parse(&machine, &data) {
-                instruction.exec(machine, data);
-            }
+            let _ = machine.step(data);
 
             if machine.output.len() == 3 {
                 packets.push((machine.output[0], machine.output[1], machine.output[2]));
@@ -47,8 +42,8 @@ fn part1() {
             if addr == 255 {
                 output = Some((x, y))
             } else {
-                machines[addr as usize].0.input.push(x);
-                machines[addr as usize].0.input.push(y);
+                machines[addr as usize].0.input.0.push(x);
+                machines[addr as usize].0.input.0.push(y);
             }
         }
     }
@@ -63,7 +58,7 @@ struct IdleState {
 
 fn part2() {
     let start = Instant::now();
-    let data = parse_input(INPUT);
+    let data = parse_program(INPUT, 256);
 
     let mut machines: Vec<_> = (0..50).map(|v| (
         Machine::new(vec![v]),
@@ -77,16 +72,14 @@ fn part2() {
     loop {
         let mut packets = vec![];
         for (machine, data, idle_state) in machines.iter_mut() {
-            if machine.input.is_empty() {
-                machine.input.push(-1);
+            if machine.input_is_empty() {
+                machine.input.0.push(-1);
                 idle_state.idle_read_count += 1;
             }
 
             if machine.halt { continue }
 
-            if let Some(instruction) = Instruction::parse(&machine, &data) {
-                instruction.exec(machine, data);
-            }
+            let _ = machine.step(data);
 
             if !machine.output.is_empty() {
                 idle_state.idle_read_count = 0;
@@ -100,8 +93,8 @@ fn part2() {
             if addr == 255 {
                 nat_packet = Some((x, y));
             } else {
-                machines[addr as usize].0.input.push(x);
-                machines[addr as usize].0.input.push(y);
+                machines[addr as usize].0.input.0.push(x);
+                machines[addr as usize].0.input.0.push(y);
                 machines[addr as usize].2.idle_read_count = 0;
             }
         }
@@ -111,8 +104,8 @@ fn part2() {
                 if seen_nat_packets.contains(&nat_packet) {
                     break;
                 }
-                machines[0].0.input.push(nat_packet.0);
-                machines[0].0.input.push(nat_packet.1);
+                machines[0].0.input.0.push(nat_packet.0);
+                machines[0].0.input.0.push(nat_packet.1);
                 machines[0].2.idle_read_count = 0;
 
                 seen_nat_packets.insert(nat_packet);
@@ -127,12 +120,12 @@ fn part2() {
 }
 
 
-fn parse_input(input: &'static str) -> Vec<isize> {
-    let mut mem: Vec<_> = input.split(',')
-        .map(|num| num.parse().unwrap())
-        .collect();
+// fn parse_input(input: &'static str) -> Vec<isize> {
+//     let mut mem: Vec<_> = input.split(',')
+//         .map(|num| num.parse().unwrap())
+//         .collect();
 
-    mem.extend([0; 256]);
+//     mem.extend([0; 256]);
 
-    mem
-}
+//     mem
+// }

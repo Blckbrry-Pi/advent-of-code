@@ -306,6 +306,9 @@ dependencies = [
 [[package]]
 name = "day02-2019"
 version = "0.1.0"
+dependencies = [
+ "intcode-2019",
+]
 
 [[package]]
 name = "day02-2022"
@@ -343,6 +346,9 @@ dependencies = [
 [[package]]
 name = "day05-2019"
 version = "0.1.0"
+dependencies = [
+ "intcode-2019",
+]
 
 [[package]]
 name = "day06"
@@ -379,6 +385,9 @@ dependencies = [
 [[package]]
 name = "day09-2019"
 version = "0.1.0"
+dependencies = [
+ "intcode-2019",
+]
 
 [[package]]
 name = "day10"
@@ -419,10 +428,16 @@ version = "0.1.0"
 [[package]]
 name = "day19-2019"
 version = "0.1.0"
+dependencies = [
+ "intcode-2019",
+]
 
 [[package]]
 name = "day21-2019"
 version = "0.1.0"
+dependencies = [
+ "intcode-2019",
+]
 
 [[package]]
 name = "day21-2023"
@@ -431,6 +446,9 @@ version = "0.1.0"
 [[package]]
 name = "day23-2019"
 version = "0.1.0"
+dependencies = [
+ "intcode-2019",
+]
 
 [[package]]
 name = "day24-2023"
@@ -442,6 +460,9 @@ dependencies = [
 [[package]]
 name = "day25-2019"
 version = "0.1.0"
+dependencies = [
+ "intcode-2019",
+]
 
 [[package]]
 name = "day25-2023"
@@ -912,6 +933,10 @@ dependencies = [
  "equivalent",
  "hashbrown 0.15.2",
 ]
+
+[[package]]
+name = "intcode-2019"
+version = "0.1.0"
 
 [[package]]
 name = "ipnet"

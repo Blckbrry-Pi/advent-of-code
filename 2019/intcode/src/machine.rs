@@ -5,7 +5,7 @@ use crate::instruction::Instruction;
 #[derive(Debug, Clone)]
 pub struct Machine {
     pub pc: usize,
-    pub input: Vec<isize>,
+    pub input: (Vec<isize>, usize),
     pub output: Vec<isize>,
     pub halt: bool,
     pub offset: isize,
@@ -17,22 +17,54 @@ impl Machine {
     pub fn new(input: Vec<isize>) -> Self {
         Self {
             pc: 0,
-            input,
+            input: (input, 0),
             output: vec![],
             halt: false,
             offset: 0,
             debug: false,
         }
     }
+    pub fn new_ascii(input: &str) -> Self {
+        Self::new(
+            input.chars().map(|c| c as u8 as isize).collect()
+        )
+    }
+    pub fn input_is_empty(&self) -> bool {
+        self.input.1 >= self.input.0.len()
+    }
     pub fn input(&mut self) -> isize {
-        if self.input.is_empty() {
+        if self.input.1 >= self.input.0.len() {
             -1
         } else {
-            self.input.remove(0)
+            let output = self.input.0[self.input.1];
+            self.input.1 += 1;
+            if self.input.1 >= 100 {
+                self.input.0.drain(0..self.input.1).count();
+                self.input.1 = 0;
+            }
+            output
         }
     }
     pub fn output(&mut self, val: isize) {
         self.output.push(val);
+    }
+
+    pub fn decode(&self, data: &[isize]) -> Option<Instruction> {
+        Instruction::parse(self, data)
+    }
+    pub fn exec(&mut self, instruction: Instruction, data: &mut [isize]) {
+        instruction.exec(self, data);
+    }
+
+    pub fn step(&mut self, data: &mut [isize]) -> Result<(), ()> {
+        if self.halt { return Err(()) }
+
+        if let Some(instruction) = self.decode(data) {
+            self.exec(instruction, data);
+            Ok(())
+        } else {
+            Err(())
+        }
     }
 
     pub fn run(
@@ -73,7 +105,7 @@ impl Machine {
                     // Read in
                     loop {
                         match receiver.try_recv() {
-                            Ok(Ok(byte)) => self.input.push(byte as isize),
+                            Ok(Ok(byte)) => self.input.0.push(byte as isize),
                             Ok(Err(e)) => {
                                 reader_handle.join().unwrap();
                                 return Err(e);

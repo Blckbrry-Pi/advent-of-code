@@ -1,11 +1,7 @@
 #![feature(buf_read_has_data_left)]
 
 use std::time::Instant;
-
-use instruction::Instruction;
-use machine::Machine;
-mod instruction;
-mod machine;
+use intcode_2019::{ parse_program, Machine };
 
 fn main() {
     part1();
@@ -50,7 +46,7 @@ north
 
 fn part1() {
     let start = Instant::now();
-    let mut data = parse_input(INPUT);
+    let mut data = parse_program(INPUT, 256);
 
     let mut commands: String = PROGRAM_INPUT.trim_start().to_string();
 
@@ -68,12 +64,12 @@ fn part1() {
         commands.push_str("inv\n");
         commands.push_str("north\n");
     }
-    let mut machine = Machine::new(commands.trim_start().as_bytes().iter().copied().map(|b| b as isize).collect());
+
+    let mut machine = Machine::new_ascii(&commands);
     
     let mut lines = vec![];
 
-    while let Some(instruction) = Instruction::parse(&machine, &data) {
-        instruction.exec(&mut machine, &mut data);
+    while machine.step(&mut data).is_ok() {
         if let Some(b'\n') = machine.output.last().map(|&v| v as u8) {
             let line: Vec<_> = machine.output.into_iter().map(|v| v as u8).collect();
             let line = String::from_utf8_lossy(&line).into_owned();
@@ -92,14 +88,4 @@ fn part1() {
     let (password, _) = password.split_once(" on ").unwrap();
 
     println!("Part 1: {password} {:?}", start.elapsed());
-}
-
-fn parse_input(input: &'static str) -> Vec<isize> {
-    let mut mem: Vec<_> = input.split(',')
-        .map(|num| num.parse().unwrap())
-        .collect();
-
-    mem.extend([0; 256]);
-
-    mem
 }

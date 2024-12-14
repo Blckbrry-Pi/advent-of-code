@@ -1,9 +1,5 @@
 use std::time::Instant;
-
-use instruction::Instruction;
-use machine::Machine;
-mod instruction;
-mod machine;
+use intcode_2019::{ parse_program, Machine };
 
 fn main() {
     part1();
@@ -49,19 +45,11 @@ RUN
 
 fn part1() {
     let start = Instant::now();
-    let mut data = parse_input(INPUT);
+    let mut data = parse_program(INPUT, 256);
 
-    let mut machine = Machine::new(
-        SPRINGDROID_PROGRAM_P1.trim_start()
-                .bytes()
-                .map(|v| v as isize)
-                .collect()
-        );
+    let mut machine = Machine::new_ascii(SPRINGDROID_PROGRAM_P1.trim_start());
 
-    while let Some(instruction) = Instruction::parse(&machine, &data) {
-        instruction.exec(&mut machine, &mut data);
-        if machine.halt { break }
-    }
+    while machine.step(&mut data).is_ok() {}
     if !machine.halt {
         println!("Encountered invalid instruction");
     }
@@ -72,33 +60,14 @@ fn part1() {
 
 fn part2() {
     let start = Instant::now();
-    let mut data = parse_input(INPUT);
+    let mut data = parse_program(INPUT, 256);
 
-    let mut machine = Machine::new(
-        SPRINGDROID_PROGRAM_P2.trim_start()
-                .bytes()
-                .map(|v| v as isize)
-                .collect()
-        );
+    let mut machine = Machine::new_ascii(SPRINGDROID_PROGRAM_P2.trim_start());
 
-    while let Some(instruction) = Instruction::parse(&machine, &data) {
-        instruction.exec(&mut machine, &mut data);
-        if machine.halt { break }
-    }
+    while machine.step(&mut data).is_ok() {}
     if !machine.halt {
         println!("Encountered invalid instruction");
     }
 
     println!("Part 2: {} {:?}", machine.output.last().unwrap(), start.elapsed());
-}
-
-
-fn parse_input(input: &'static str) -> Vec<isize> {
-    let mut mem: Vec<_> = input.split(',')
-        .map(|num| num.parse().unwrap())
-        .collect();
-
-    mem.extend([0; 256]);
-
-    mem
 }

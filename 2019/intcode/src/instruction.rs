@@ -42,7 +42,7 @@ macro_rules! opcode_def {
                         #[allow(unused_mut, unused_variables)]
                         let mut idx = 0;
                         $(
-                            let $arg = Addr { arg: data[machine.pc+idx+1], mode: modes[idx] };
+                            let $arg = Addr { arg: data[machine.pc+idx+1] as i32, mode: modes[idx] };
 
                             #[allow(unused_assignments)]
                             { idx += 1 }
@@ -91,11 +91,6 @@ macro_rules! opcode_def {
             fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                 match *self {
                     $(Self::$opcode { $($arg,)* } => {
-                        // #[allow(dead_code)]
-                        // #[derive(Debug)]
-                        // struct $opcode {
-                        //     $($arg: $crate::instruction::Addr,)*
-                        // }
                         write!(f, "{} ", stringify!($opcode))?;
                         $(write!(f, "{:?}, ", $arg)?;)*
                         Ok(())
@@ -202,20 +197,20 @@ impl Mode {
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
-pub struct Addr { pub arg: isize, pub mode: Mode }
+pub struct Addr { pub arg: i32, pub mode: Mode }
 
 impl Addr {
     pub fn get(&self, data: &[isize], machine: &Machine) -> isize {
-        self.mode.get(self.arg, data, machine.offset)
+        self.mode.get(self.arg as isize, data, machine.offset)
     }
     pub fn set(&self, val: isize, data: &mut [isize], machine: &Machine) {
-        self.mode.set(self.arg, val, data, machine.offset)
+        self.mode.set(self.arg as isize, val, data, machine.offset)
     }
 
     pub fn set_fn(&self, machine: &Machine) -> impl FnMut(isize, &mut [isize]) {
         let Self { arg, mode } = *self;
         let offset = machine.offset;
-        move |val, data| mode.set(arg, val, data, offset)
+        move |val, data| mode.set(arg as isize, val, data, offset)
     }
 }
 
@@ -232,9 +227,9 @@ impl Debug for Addr {
             }
         }
         match self.mode {
-            Mode::Position => write!(f, "[{:?}]", ArgVal { val: self.arg }),
-            Mode::Immediate => write!(f, "{:?}", ArgVal { val: self.arg }),
-            Mode::Relative => write!(f, "[$rel + {:?}]", ArgVal { val: self.arg }),
+            Mode::Position => write!(f, "[{:?}]", ArgVal { val: self.arg as isize }),
+            Mode::Immediate => write!(f, "{:?}", ArgVal { val: self.arg as isize }),
+            Mode::Relative => write!(f, "[$rel + {:?}]", ArgVal { val: self.arg as isize }),
         }
     }
 }

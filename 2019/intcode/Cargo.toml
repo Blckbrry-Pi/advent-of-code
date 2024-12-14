@@ -1,7 +1,6 @@
 [package]
-name = "day09-2019"
+name = "intcode-2019"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-intcode-2019 = { path = "../intcode" }

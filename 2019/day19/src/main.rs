@@ -1,9 +1,5 @@
 use std::time::Instant;
-
-use instruction::Instruction;
-use machine::Machine;
-mod instruction;
-mod machine;
+use intcode_2019::{ parse_program, Machine };
 
 fn main() {
     part1();
@@ -16,18 +12,15 @@ const INPUT: &str = include_str!("../../../data/2019/day19/input.txt");
 
 fn part1() {
     let start = Instant::now();
-    let template_data = parse_input(INPUT);
+    let template_data = parse_program(INPUT, 256);
 
     let mut count = 0;
     for x in 0..50 {
         for y in 0..50 {
             let mut data = template_data.clone();
             let mut machine = Machine::new(vec![x, y]);
-        
-            while let Some(instruction) = Instruction::parse(&machine, &data) {
-                instruction.exec(&mut machine, &mut data);
-                if machine.halt { break }
-            }
+
+            while machine.step(&mut data).is_ok() {}
             if !machine.halt {
                 println!("Encountered invalid instruction");
             }
@@ -47,30 +40,55 @@ fn part2() {
 
     let mut beam = vec![[false; 1500]; 1500];
 
-    for x in 0..1500 {
-        for y in 0..1500 {
+    let mut leftmost = 0;
+    let mut width = 0;
+    let mut starting_candidate = -1;
+    for y in 0..1500 {
+        let mut new_leftmost = isize::MAX;
+        let mut new_width = -1;
+        for x in leftmost..1500 {
+            if new_leftmost != isize::MAX && x - new_leftmost < width {
+                beam[y as usize][x as usize] = true;
+                continue
+            }
             let mut data = template_data.clone();
             let mut machine = Machine::new(vec![x, y]);
-        
-            while let Some(instruction) = Instruction::parse(&machine, &data) {
-                instruction.exec(&mut machine, &mut data);
-                if machine.halt { break }
-            }
+
+            while machine.step(&mut data).is_ok() {}
             if !machine.halt {
                 println!("Encountered invalid instruction");
             }
             if *machine.output.last().unwrap() == 1 {
+                new_leftmost = new_leftmost.min(x);
                 beam[y as usize][x as usize] = true;
+            } else if new_leftmost != isize::MAX {
+                new_width = x - new_leftmost;
+                break
+            }
+        }
+        if new_leftmost != isize::MAX {
+            leftmost = new_leftmost;
+        }
+        if new_width != -1 {
+            width = new_width;
+            if starting_candidate == -1 && width >= 100 {
+                starting_candidate = y;
             }
         }
     }
 
     let mut working = vec![];
-    for y in 0..beam.len() - 100 {
-        for x in 0..beam[y].len() - 100 {
+    let mut leftmost = 0;
+    for y in starting_candidate as usize..beam.len() - 100 {
+        let mut new_leftmost = usize::MAX;
+        for x in leftmost..beam[y].len() - 100 {
+            if beam[y][x] {
+                new_leftmost = new_leftmost.min(x);
+            }
             let works = 'works: {
-                for dy in 0..100 {
-                    for dx in 0..100 {
+                // Just check the corners
+                for dy in [0, 99] {
+                    for dx in [0, 99] {
                         if !beam[y+dy][x+dx] {
                             break 'works false;
                         }
@@ -81,6 +99,9 @@ fn part2() {
             if works {
                 working.push((x, y));
             }
+        }
+        if new_leftmost != usize::MAX {
+            leftmost = new_leftmost;
         }
     }
 

@@ -1,3 +1,5 @@
 /target
 data
 .aoc_cookie
+disasm
+flamegraph.svg
