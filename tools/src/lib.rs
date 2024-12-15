@@ -42,7 +42,8 @@ macro_rules! aoc_sol {
 macro_rules! day_bench {
     ($day:ident) => {
         mod $day {
-            use criterion::{black_box, criterion_group, Criterion};
+            use criterion::{ criterion_group, Criterion, SamplingMode::AutoMin };
+            use std::hint::black_box;
 
             const INPUT: &str = include_str!(concat!("../../data/", stringify!($day), "/input.txt"));
 
@@ -60,7 +61,9 @@ macro_rules! day_bench {
 
             criterion_group! {
                 name = $day;
-                config = Criterion::default().measurement_time(std::time::Duration::from_secs(20));
+                config = Criterion::default()
+                    .measurement_time(std::time::Duration::from_secs(10))
+                    .sampling_mode(AutoMin(10));
                 targets = p1, p2
             }
         }
@@ -71,7 +74,8 @@ macro_rules! day_bench {
 macro_rules! multi_day_bench {
     ($multiday_name:ident: $($day:ident),+ $(,)?) => {
         mod $multiday_name {
-            use criterion::{black_box, criterion_group, Criterion};
+            use criterion::{ criterion_group, Criterion };
+            use std::hint::black_box;
 
             const INPUT_COUNT: u64 = [$(stringify!($day),)+].len() as u64;
             #[allow(non_upper_case_globals)]
@@ -102,41 +106,61 @@ macro_rules! multi_day_bench {
 
 #[macro_export]
 macro_rules! pos {
-    ($inner_type:ty) => {
+    ($inner_type:ty $(: $($derives:ident),+)?) => {
+        // #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+        $crate::pos!(@impl {
+            struct Pos { x: $inner_type, y: $inner_type }
+    
+            #[allow(dead_code)]
+            impl Pos {
+                pub fn add(&self, o: Self) -> Self {
+                    Self {
+                        x: self.x.wrapping_add(o.x),
+                        y: self.y.wrapping_add(o.y)
+                    }
+                }
+    
+                pub fn neg(&self) -> Self {
+                    Self {
+                        x: 0 - self.x,
+                        y: 0 - self.y
+                    }
+                }
+    
+                pub fn sub(&self, o: Self) -> Self {
+                    Self {
+                        x: self.x.wrapping_sub(o.x),
+                        y: self.y.wrapping_add(o.y),
+                    }
+                }
+    
+                pub fn mul(&self, s: $inner_type) -> Self {
+                    Self {
+                        x: self.x * s,
+                        y: self.y * s,
+                    }
+                }
+            }
+        } derives: $($($derives)+)?);
+    };
+
+    (@impl { $($input:tt)+ } derives: $($derive:ident)+) => {
+        #[derive($($derive),+)]
+        $($input)+
+    };
+    (@impl { $($input:tt)+ } derives: ) => {
         #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-        struct Pos { x: $inner_type, y: $inner_type }
+        $($input)+
+    };
+}
 
-        #[allow(dead_code)]
-        impl Pos {
-            pub fn add(&self, o: Self) -> Self {
-                Self {
-                    x: self.x + o.x,
-                    y: self.y + o.y
-                }
-            }
+#[macro_export]
+macro_rules! arena {
+    () => {
+        use $crate::__hidden_ferroc::Ferroc;
 
-            pub fn neg(&self) -> Self {
-                Self {
-                    x: 0 - self.x,
-                    y: 0 - self.y
-                }
-            }
-
-            pub fn sub(&self, o: Self) -> Self {
-                Self {
-                    x: self.x - o.x,
-                    y: self.y - o.y
-                }
-            }
-
-            pub fn mul(&self, s: $inner_type) -> Self {
-                Self {
-                    x: self.x * s,
-                    y: self.y * s,
-                }
-            }
-        }
-
+        #[global_allocator]
+        static FERROC: Ferroc = Ferroc;
     };
 }
 
@@ -148,28 +172,100 @@ macro_rules! fast_hash {
     };
 }
 
+#[doc(hidden)]
+#[allow(unused_imports)]
 pub mod __hidden_hasher {
     use std::collections::{ HashSet, HashMap };
+    use std::hash::{ BuildHasher, DefaultHasher, Hash, Hasher };
+    use std::num::Wrapping;
 
+    // type HashBuilder = FastHasherBuilder;
     // type HashBuilder = xxhash_rust::xxh3::Xxh3Builder;
-    type HashBuilder = std::hash::RandomState;
+    // type HashBuilder = std::hash::RandomState;
+    type HashBuilder = NoRandomState;
+
+    // #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+    // pub struct FastHasher(Wrapping<u64>);
+
+    // macro_rules! impl_int {
+    //     ($fn:ident($type:ty) << $shift:literal) => {
+    //         fn $fn(&mut self, i: $type) {
+    //             self.0 = (self.0 << $shift) ^ self.0 ^ Wrapping(i as u64);
+    //         }
+    //     };
+    // }
+
+    // impl Hasher for FastHasher {
+    //     fn write(&mut self, bytes: &[u8]) {
+    //         for &byte in bytes {
+    //             self.0 = (self.0 << 5) ^ self.0 ^ Wrapping(byte as u64);
+    //         }
+    //     }
+
+    //     impl_int!(write_i8(i8) << 5);
+    //     impl_int!(write_u8(u8) << 5);
+
+    //     impl_int!(write_i16(i16) << 11);
+    //     impl_int!(write_u16(u16) << 11);
+
+    //     impl_int!(write_i32(i32) << 23);
+    //     impl_int!(write_u32(u32) << 23);
+
+    //     impl_int!(write_i64(i64) << 41);
+    //     impl_int!(write_u64(u64) << 41);
+
+    //     fn finish(&self) -> u64 {
+    //         // Modulo first prime after 2^62
+    //         // self.0.0 % 4_611_686_018_427_388_039
+    //         self.0.0
+    //     }
+    // }
+
+    // #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+    // pub struct FastHasherBuilder(Wrapping<u64>);
+    // impl BuildHasher for FastHasherBuilder {
+    //     type Hasher = FastHasher;
+    //     fn build_hasher(&self) -> Self::Hasher {
+    //         FastHasher(self.0)
+    //     }
+    // }
+    // impl Default for FastHasherBuilder {
+    //     fn default() -> Self {
+    //         // Prime number with nice digits spread evenly
+    //         // First prime before 2^63.5
+    //         Self(Wrapping(13_043_817_825_332_783_101))
+    //     }
+    // }
+
+    #[derive(Debug, Clone, Copy, Default)]
+    pub struct NoRandomState;
+    impl BuildHasher for NoRandomState {
+        type Hasher = std::hash::DefaultHasher;
+        fn build_hasher(&self) -> Self::Hasher {
+            Self::Hasher::default()
+        }
+    }
+    
 
     pub type FastMap<K, V> = HashMap<K, V, HashBuilder>;
     pub fn new_fastmap<K, V>() -> FastMap<K, V> {
-        HashMap::with_hasher(HashBuilder::new())
+        HashMap::with_hasher(HashBuilder::default())
     }
     pub fn new_fastmap_with_capacity<K, V>(capacity: usize) -> FastMap<K, V> {
-        HashMap::with_capacity_and_hasher(capacity, HashBuilder::new())
+        HashMap::with_capacity_and_hasher(capacity, HashBuilder::default())
     }
 
     pub type FastSet<T> = HashSet<T, HashBuilder>;
     pub fn new_fastset<T>() -> FastSet<T> {
-        HashSet::with_hasher(HashBuilder::new())
+        HashSet::with_hasher(HashBuilder::default())
     }
     pub fn new_fastset_with_capacity<T>(capacity: usize) -> FastSet<T> {
-        HashSet::with_capacity_and_hasher(capacity, HashBuilder::new())
+        HashSet::with_capacity_and_hasher(capacity, HashBuilder::default())
     }
 }
+
+#[doc(hidden)]
+pub use ferroc as __hidden_ferroc;
 
 pub fn get_cookie() -> String {
     std::fs::read_to_string(".aoc_cookie").unwrap()

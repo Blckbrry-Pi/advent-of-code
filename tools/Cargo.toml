@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+ferroc = { version = "^1.0.0-pre.3", git = "https://github.com/js2xxx/ferroc.git" }
 reqwest = { version = "0.12", features = ["blocking"] }
 
 [dependencies.xxhash-rust]
