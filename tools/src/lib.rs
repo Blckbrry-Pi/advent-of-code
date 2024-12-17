@@ -156,9 +156,10 @@ macro_rules! pos {
 
 #[macro_export]
 macro_rules! arena {
-    () => {
+    ($($feature:ident)?) => {
         use $crate::__hidden_ferroc::Ferroc;
 
+        $(#[feature($feature)])?
         #[global_allocator]
         static FERROC: Ferroc = Ferroc;
     };

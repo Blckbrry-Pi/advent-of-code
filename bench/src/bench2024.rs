@@ -1,5 +1,7 @@
 use criterion::criterion_main;
 
+aoc_tools::arena!(arena);
+
 aoc_tools::multi_day_bench!(
     bench_2024:
         day01, day02, day03, day04, day05,

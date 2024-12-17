@@ -1,49 +1,64 @@
 // use std::sync::Arc;
 use std::rc::Rc;
 
-aoc_tools::aoc_sol!(day16: part1, part2);
+aoc_tools::aoc_sol!(day16 test: part1, part2);
 type Scalar = i16;
+type ScoreScalar = u32;
 aoc_tools::pos!(i16);
 aoc_tools::fast_hash!();
-// aoc_tools::arena!();
 
-
-pub fn part1(input: &str) -> usize {
+pub fn part1(input: &str) -> ScoreScalar {
     let map = parse_input(input);
 
-    map.min_score(false).0
+    map.min_score::<false>().0
 }
 
 pub fn part2(input: &str) -> usize {
     let map = parse_input(input);
 
-    let positions = map.min_score(true).1;
-    positions.len()
+    map.min_score::<true>().1.len()
 }
 
 fn parse_input(input: &str) -> Map {
     let mut start = Pos { x: 0, y: 0 };
     let mut end = Pos { x: 0, y: 0 };
-    let clear = input.lines()
-        .map(|l| l.trim())
-        .filter(|l| !l.is_empty())
-        .enumerate()
-        .map(|(y, l)| {
-            l.bytes().enumerate().map(|(x, b)| match b {
-                b'#' => false,
-                b'.' => true,
-                b'S' => {
-                    start = Pos { x: x as Scalar, y: y as Scalar };
-                    true
-                },
-                b'E' => {
-                    end = Pos { x: x as Scalar, y: y as Scalar };
-                    true
-                },
-                _ => panic!("Invalid char {b}")
-            }).collect()
-        })
-        .collect();
+
+    let capacity = (input.len() as f64).sqrt() as usize + 2;
+
+    let input = input.trim().as_bytes();
+    let mut clear = Vec::with_capacity(capacity);
+    clear.push(Vec::with_capacity(capacity));
+
+    let mut i = 0;
+    let mut x = 0;
+    let mut y = 0;
+    while i < input.len() {
+        let b = input[i];
+        if b == b'\n' {
+            x = 0;
+            y += 1;
+            i += 1;
+
+            clear.push(Vec::with_capacity(capacity));
+            continue;
+        }
+
+        clear[y as usize].push(match b {
+            b'#' => false,
+            b'S' => {
+                start = Pos { x, y };
+                true
+            },
+            b'E' => {
+                end = Pos { x, y };
+                true
+            },
+            _ => true,
+        });
+
+        x += 1;
+        i += 1;
+    }
 
     Map { clear, start, end }
 }
@@ -56,81 +71,51 @@ struct Map {
 }
 
 impl Map {
-    fn min_score(&self, track_histories: bool) -> (usize, FastSet<Pos>) {
-        // let longest_path_estimate = (self.clear.len() + self.clear[0].len()) * 8;
-
-        let mut current_vals: FastMap<ReindeerState, (usize, History)> = [
-            ReindeerState { pos: self.start, direction: Pos { x:  1, y:  0 } },
+    fn min_score<const HISTORIES: bool>(&self) -> (ScoreScalar, FastSet<Pos>) {
+        let mut current_vals: FastMap<ReindeerState, (ScoreScalar, History)> = [
+            ReindeerState { pos: self.start, direction: Pos { x: 1, y:  0 } },
         ].into_iter().map(|v| (
             v,
-            (0, if track_histories {
+            (0, if HISTORIES {
                 History::Base(ReindeerState { pos: self.start, direction: Pos { x:  1, y:  0 } })
             } else {
                 History::Null
             })
         )).collect();
-        let mut records: FastMap<ReindeerState, usize> = current_vals.iter().map(|(&k, (v, _))| (k, *v)).collect();
-        let mut new_vals: FastMap<ReindeerState, (usize, Vec<History>)> = new_fastmap_with_capacity(64);
-
+        let mut records: FastMap<ReindeerState, ScoreScalar> = current_vals.iter().map(|(&k, (v, _))| (k, *v)).collect();
+        let mut new_vals: FastMap<ReindeerState, (ScoreScalar, Vec<History>)> = new_fastmap_with_capacity(64);
 
         let mut winning_positions = new_fastset_with_capacity(self.clear.len() * 8);
-        let mut winning_score = usize::MAX;
+        let mut winning_score = ScoreScalar::MAX;
 
         while !current_vals.is_empty() {
             for (state, (score, history)) in current_vals.drain() {
-                let l = state.turn_l().step();
-                if self.clear_at(l.pos) {
-                    let old_score = records.get(&l).copied().unwrap_or(usize::MAX);
-                    let curr_score = new_vals.get_mut(&l).map(|(a, _)| *a).unwrap_or(usize::MAX);
-                    let new_score = score + 1001;
+                let new_states = [
+                    (state.turn_l().step(), score + 1001),
+                    (state.turn_r().step(), score + 1001),
+                    (state.step(), score + 1),
+                ];
+                for (new_state, new_score) in new_states {
+                    if self.clear_at(new_state.pos) {
+                        let old_score = records.get(&new_state).copied().unwrap_or(ScoreScalar::MAX);
+                        let curr_score = new_vals.get_mut(&new_state).map(|(a, _)| *a).unwrap_or(ScoreScalar::MAX);
+                        // let new_score = score + 1001;
 
-                    if new_score <= old_score {
-                        if new_score == curr_score {
-                            new_vals.get_mut(&l).unwrap().1.push(history.clone());
-                        } else if new_score < curr_score {
-                            let mut new_vec = Vec::with_capacity(8);
-                            new_vec.push(history.clone());
-                            new_vals.insert(l, (new_score, new_vec));
-                        }
-                    }
-                }
-
-                let r = state.turn_r().step();
-                if self.clear_at(r.pos) {
-                    let old_score = records.get(&r).copied().unwrap_or(usize::MAX);
-                    let curr_score = new_vals.get_mut(&r).map(|(a, _)| *a).unwrap_or(usize::MAX);
-                    let new_score = score + 1001;
-
-                    if new_score <= old_score {
-                        if new_score == curr_score {
-                            new_vals.get_mut(&r).unwrap().1.push(history.clone());
-                        } else if new_score < curr_score {
-                            let mut new_vec = Vec::with_capacity(8);
-                            new_vec.push(history.clone());
-                            new_vals.insert(r, (new_score, new_vec));
-                        }
-                    }
-                }
-                let f = state.step();
-                if self.clear_at(f.pos) {
-                    let old_score = records.get(&f).copied().unwrap_or(usize::MAX);
-                    let curr_score = new_vals.get_mut(&f).map(|(a, _)| *a).unwrap_or(usize::MAX);
-                    let new_score = score + 1;
-
-                    if new_score <= old_score {
-                        if new_score == curr_score {
-                            new_vals.get_mut(&f).unwrap().1.push(history.clone());
-                        } else if new_score < curr_score {
-                            let mut new_vec = Vec::with_capacity(8);
-                            new_vec.push(history.clone());
-                            new_vals.insert(f, (new_score, new_vec));
+                        if new_score <= old_score {
+                            if new_score == curr_score {
+                                new_vals.get_mut(&new_state).unwrap().1.push(history.clone());
+                            } else if new_score < curr_score {
+                                let mut new_vec = Vec::with_capacity(8);
+                                new_vec.push(history.clone());
+                                new_vals.insert(new_state, (new_score, new_vec));
+                            }
                         }
                     }
                 }
             }
 
             for (state, (score, history)) in new_vals.drain() {
-                let new_history = || if track_histories {
+                let new_history = || if HISTORIES {
                     History::With(Rc::new(history), state)
                 } else {
                     History::Null
@@ -145,7 +130,7 @@ impl Map {
                         new_history().add_positions(&mut winning_positions);
                     }
                 } else {
-                    let record = *records.entry(state).or_insert(usize::MAX);
+                    let record = *records.entry(state).or_insert(ScoreScalar::MAX);
                     if record == score {
                         current_vals.get_mut(&state).unwrap().1 = new_history();
                     } else if score < record {
@@ -163,6 +148,7 @@ impl Map {
         self.clear[p.y as usize][p.x as usize]
     }
 
+    #[allow(dead_code)]
     fn show_path(&self, path: &[ReindeerState]) {
         for y in 0..self.clear.len() {
             for x in 0..self.clear[0].len() {
@@ -212,6 +198,7 @@ enum History {
 }
 
 impl History {
+    #[allow(dead_code)]
     pub fn vecs(&self) -> Box<dyn Iterator<Item = Vec<ReindeerState>> + '_> {
         match self {
             Self::Null => Box::new([].into_iter()),

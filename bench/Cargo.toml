@@ -3,6 +3,9 @@ name = "bench"
 version = "0.1.0"
 edition = "2021"
 
+[features]
+arena = []
+
 [dependencies]
 day01 = { version = "0.1.0", path = "../day01" }
 day02 = { version = "0.1.0", path = "../day02" }
