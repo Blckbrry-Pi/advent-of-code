@@ -289,6 +289,10 @@ dependencies = [
  "day14",
  "day15",
  "day16",
+ "day17",
+ "day18",
+ "day19",
+ "day20",
 ]
 
 [[package]]
@@ -685,10 +689,38 @@ name = "day16-2022"
 version = "0.1.0"
 
 [[package]]
+name = "day17"
+version = "0.1.0"
+dependencies = [
+ "aoc_tools",
+]
+
+[[package]]
+name = "day18"
+version = "0.1.0"
+dependencies = [
+ "aoc_tools",
+]
+
+[[package]]
+name = "day19"
+version = "0.1.0"
+dependencies = [
+ "aoc_tools",
+]
+
+[[package]]
 name = "day19-2019"
 version = "0.1.0"
 dependencies = [
  "intcode-2019",
+]
+
+[[package]]
+name = "day20"
+version = "0.1.0"
+dependencies = [
+ "aoc_tools",
 ]
 
 [[package]]

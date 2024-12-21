@@ -130,7 +130,7 @@ macro_rules! pos {
                 pub fn sub(&self, o: Self) -> Self {
                     Self {
                         x: self.x.wrapping_sub(o.x),
-                        y: self.y.wrapping_add(o.y),
+                        y: self.y.wrapping_sub(o.y),
                     }
                 }
     
