@@ -293,6 +293,7 @@ dependencies = [
  "day18",
  "day19",
  "day20",
+ "day22",
 ]
 
 [[package]]
@@ -733,6 +734,13 @@ dependencies = [
 [[package]]
 name = "day21-2023"
 version = "0.1.0"
+
+[[package]]
+name = "day22"
+version = "0.1.0"
+dependencies = [
+ "aoc_tools",
+]
 
 [[package]]
 name = "day23-2019"
