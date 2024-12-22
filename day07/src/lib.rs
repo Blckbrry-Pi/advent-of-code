@@ -1,15 +1,13 @@
 aoc_tools::aoc_sol!(day07: part1, part2);
-// aoc_tools::arena!();
 
 type Scalar = i64;
 
 pub fn part1(input: &str) -> Scalar {
-
     let equations = parse_input(input);
 
     let mut sum = 0;
     for equation in equations {
-        if equation.solve().is_some() {
+        if equation.solve() {
             sum += equation.target;
         }
     }
@@ -22,7 +20,7 @@ pub fn part2(input: &str) -> Scalar {
 
     let mut sum = 0;
     for equation in equations {
-        if equation.solve_concat().is_some() {
+        if equation.solve_concat() {
             sum += equation.target;
         }
     }
@@ -39,6 +37,7 @@ fn parse_input(input: &str) -> Vec<Equation> {
             let mut values = Vec::with_capacity(values_str.len() / 2);
             values_str.split(' ')
                 .map(parse_unsigned)
+                .inspect(|v| assert!(*v < 10_000)) // Unsafe condition asserted here
                 .for_each(|v| values.push(v));
 
             Equation { target, values }
@@ -64,43 +63,43 @@ struct Equation {
 }
 
 impl Equation {
-    fn solve_recursive(target: Scalar, curr: Scalar, remaining: &[Scalar], operators: &[Operator]) -> Option<OpVec> {        
+    // fn solve_recursive(target: Scalar, curr: Scalar, remaining: &[Scalar], operators: &[Operator]) -> Option<OpVec> {        
+    fn solve_recursive<'a, T: IntoIterator<Item = &'a Operator> + Copy>(
+        target: Scalar,
+        curr: Scalar,
+        remaining: &[Scalar],
+        operators: T,
+    ) -> bool {
         let next = remaining[0];
         let remaining = &remaining[1..];
         for &op in operators {
-            let curr = op.apply(curr, next);
+            let curr = unsafe { op.apply_unchecked(curr, next) };
             if curr > target && next > 1 { break }
             if remaining.is_empty() {
-                if curr == target {
-                    return Some(OpVec::new_one(op))
-                } else {
-                    continue;
-                }
+                if curr == target { return true }
+                else { continue }
             }
 
-            if let Some(mut sol) = Self::solve_recursive(target, curr, remaining, operators) {
-                sol.push(op);
-                return Some(sol)
-            }
+            if Self::solve_recursive(target, curr, remaining, operators) { return true }
         }
 
-        None
+        false
     }
-    pub fn solve(&self) -> Option<OpVec> {
+    pub fn solve(&self) -> bool {
         Self::solve_recursive(
             self.target,
             self.values[0],
             &self.values[1..],
             &[Operator::Plus, Operator::Mult],
-        ).map(|mut v| { v.reverse(); v })
+        )
     }
-    pub fn solve_concat(&self) -> Option<OpVec> {
+    pub fn solve_concat(&self) -> bool {
         Self::solve_recursive(
             self.target,
             self.values[0],
             &self.values[1..],
             &[Operator::Plus, Operator::Mult, Operator::Concat],
-        ).map(|mut v| { v.reverse(); v })
+        )
     }
 
     #[allow(dead_code)]
@@ -108,7 +107,7 @@ impl Equation {
         let output = self.values[1..].iter()
             .copied()
             .zip(solution.iter())
-            .fold(self.values[0], |a, (b, op)| op.apply(a, b));
+            .fold(self.values[0], |a, (b, op)| unsafe { op.apply_unchecked(a, b) });
 
         output == self.target
     }
@@ -124,7 +123,7 @@ impl Operator {
             (true , _    ) => Self::Concat,
         }
     }
-    pub fn apply(&self, a: Scalar, b: Scalar) -> Scalar {
+    pub unsafe fn apply_unchecked(&self, a: Scalar, b: Scalar) -> Scalar {
         match self {
             Self::Plus => a + b,
             Self::Mult => a * b,
@@ -134,21 +133,21 @@ impl Operator {
                     ..100 => 100,
                     ..1_000 => 1_000,
                     ..10_000 => 10_000,
-                    ..100_000 => 100_000,
-                    ..1_000_000 => 1_000_000,
-                    ..10_000_000 => 10_000_000,
-                    ..100_000_000 => 100_000_000,
-                    ..1_000_000_000 => 1_000_000_000,
-                    ..10_000_000_000 => 10_000_000_000,
-                    ..100_000_000_000 => 100_000_000_000,
-                    ..1_000_000_000_000 => 1_000_000_000_000,
-                    ..10_000_000_000_000 => 10_000_000_000_000,
-                    ..100_000_000_000_000 => 100_000_000_000_000,
-                    ..1_000_000_000_000_000 => 1_000_000_000_000_000,
-                    ..10_000_000_000_000_000 => 10_000_000_000_000_000,
-                    ..100_000_000_000_000_000 => 100_000_000_000_000_000,
-                    ..1_000_000_000_000_000_000 => 1_000_000_000_000_000_000,
-                    _ => Scalar::MAX,
+                    // ..100_000 => 100_000,
+                    // ..1_000_000 => 1_000_000,
+                    // ..10_000_000 => 10_000_000,
+                    // ..100_000_000 => 100_000_000,
+                    // ..1_000_000_000 => 1_000_000_000,
+                    // ..10_000_000_000 => 10_000_000_000,
+                    // ..100_000_000_000 => 100_000_000_000,
+                    // ..1_000_000_000_000 => 1_000_000_000_000,
+                    // ..10_000_000_000_000 => 10_000_000_000_000,
+                    // ..100_000_000_000_000 => 100_000_000_000_000,
+                    // ..1_000_000_000_000_000 => 1_000_000_000_000_000,
+                    // ..10_000_000_000_000_000 => 10_000_000_000_000_000,
+                    // ..100_000_000_000_000_000 => 100_000_000_000_000_000,
+                    // ..1_000_000_000_000_000_000 => 1_000_000_000_000_000_000,
+                    _ => unsafe { std::hint::unreachable_unchecked() }, // Asserted in parse_input
                 };
                 a * a_coeff + b
             }
@@ -162,6 +161,7 @@ struct OpVec {
     len_bits: u32,
 }
 
+#[allow(dead_code)]
 impl OpVec {
     pub fn new_one(v: Operator) -> Self  {
         Self { data: v as u64, len_bits: 2 }
