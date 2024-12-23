@@ -1,17 +1,16 @@
 use std::rc::Rc;
 
 aoc_tools::aoc_sol!(day12: part1, part2);
+aoc_tools::fast_hash!();
 
 pub fn part1(input: &str) -> u64 {
     let mut garden = parse_input(input);
-
     garden.calc_area_perimeter();
     garden.calc_total_p1()
 }
 
 pub fn part2(input: &str) -> u64 {
     let mut garden = parse_input(input);
-
     garden.calc_area_perimeter();
     garden.calc_sides();
     garden.calc_total_p2()
@@ -33,7 +32,7 @@ struct Garden {
     groupings: Vec<Vec<Option<usize>>>,
     perimeters: HashMap<usize, u64>,
     areas: HashMap<usize, u64>,
-    sides: HashMap<usize, HashSet<Side>>,
+    sides: HashMap<usize, FastSet<Side>>,
 }
 
 impl Garden {
@@ -237,7 +236,9 @@ impl Garden {
                 ];
                 for (test_group, new_side) in bordering_groups.into_iter().zip(bordering_sides) {
                     if Some(group) != test_group {
-                        self.sides.entry(group).or_default().insert(new_side);
+                        self.sides.entry(group)
+                            .or_insert_with(|| new_fastset_with_capacity(32))
+                            .insert(new_side);
                     }
                 }
             }
@@ -245,9 +246,8 @@ impl Garden {
 
         // Join adjacent sides together
         for sides in self.sides.values_mut() {
-            let mut joinable_queue: Vec<_> = sides.iter().copied().collect();
-            let mut finished_sides = HashSet::new();
-            while let Some(side) = joinable_queue.pop() {
+            let mut joinable_queue: FastSet<_> = std::mem::replace(sides, new_fastset_with_capacity(sides.len() / 2));
+            while let Some(&side) = joinable_queue.iter().next() {
                 // For each side, if it can be joined, join it and put the
                 // joined parts back onto the joinable queue
                 // Otherwise, it's good to go, so put it into the finished sides
@@ -256,19 +256,20 @@ impl Garden {
                 // by the fact that all maximally joined sides that would
                 // overlap will be the same, which the HashSet will deal with.
 
+                joinable_queue.remove(&side);
+
                 'outer: {
-                    for joiner in sides.iter().copied() {
+                    for joiner in joinable_queue.iter().copied() {
                         if let Some(joined) = side.join(joiner) {
-                            if joined != side {
-                                joinable_queue.push(joined);
-                                break 'outer;
-                            }
+                            joinable_queue.insert(joined);
+                            joinable_queue.remove(&joiner);
+                            break 'outer;
                         }
                     }
-                    finished_sides.insert(side);
+                    sides.insert(side);
                 }
             }
-            *sides = finished_sides;
+            // *sides = finished_sides;
         }
 
         // Split intersecting sides apart
@@ -280,22 +281,28 @@ impl Garden {
         // where the joined sides will intersect
         for sides in self.sides.values_mut() {
             let mut splittable_queue: Vec<_> = sides.iter().copied().collect();
-            let mut finished_sides = HashSet::new();
-            while let Some(side) = splittable_queue.pop() {
-                // For each side, if it can be split, split it and put the split
-                // parts back onto the splittable queue
-                // Otherwise, it's good to go, so put it into finished sides
-                'outer: {
-                    for splitter in sides.iter().copied() {
-                        if let Some((a, b)) = side.split(splitter) {
-                            splittable_queue.push(a);
-                            splittable_queue.push(b);
-                            break 'outer;
-                        }
+            let mut finished_sides = new_fastset_with_capacity(splittable_queue.len());
+            let mut new_splittable_queue = Vec::with_capacity(splittable_queue.len());
+            for splitter in sides.iter().copied() {
+                while let Some(side) = splittable_queue.pop() {
+                    if side.len() <= 1 {
+                        finished_sides.insert(side);
+                        continue;
                     }
-                    finished_sides.insert(side);
+                    // For each side, if it can be split, split it and put the split
+                    // parts back onto the splittable queue
+                    // Otherwise, it's good to go, so put it into finished sides
+                    if let Some((a, b)) = side.split(splitter) {
+                        splittable_queue.push(a);
+                        splittable_queue.push(b);
+                        // break 'outer;
+                    } else {
+                        new_splittable_queue.push(side);
+                    }
                 }
+                std::mem::swap(&mut splittable_queue, &mut new_splittable_queue);
             }
+            finished_sides.extend(splittable_queue.drain(..));
             *sides = finished_sides;
         }
     }
@@ -384,6 +391,12 @@ impl Side {
                 Some((a.invert(), b.invert()))
             },
             _ => None,
+        }
+    }
+    fn len(&self) -> isize {
+        match *self {
+            Self::Hori { x_start, x_end, .. } => (x_end - x_start).abs() + 1,
+            Self::Vert { y_start, y_end, .. } => (y_end - y_start).abs() + 1,
         }
     }
 }
