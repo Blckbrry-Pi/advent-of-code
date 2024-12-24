@@ -20,8 +20,8 @@ macro_rules! aoc_sol {
                 let part_start = std::time::Instant::now();
                 let part = $part_fn(input);
                 let part_time = part_start.elapsed();
-                println!("Part {i}: {part:?} ({part_time:?})");
-                parts.push(format!("{part:?}"));
+                println!("Part {i}: {part} ({part_time:?})");
+                parts.push(part.to_string());
                 i += 1;
             })+
 
