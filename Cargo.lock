@@ -297,6 +297,7 @@ dependencies = [
  "day22",
  "day23",
  "day24",
+ "day25",
 ]
 
 [[package]]
@@ -778,6 +779,13 @@ name = "day24-2023"
 version = "0.1.0"
 dependencies = [
  "num-bigint",
+]
+
+[[package]]
+name = "day25"
+version = "0.1.0"
+dependencies = [
+ "aoc_tools",
 ]
 
 [[package]]

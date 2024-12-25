@@ -31,6 +31,7 @@ day21 = { version = "0.1.0", path = "../day21" }
 day22 = { version = "0.1.0", path = "../day22" }
 day23 = { version = "0.1.0", path = "../day23" }
 day24 = { version = "0.1.0", path = "../day24" }
+day25 = { version = "0.1.0", path = "../day25" }
 
 criterion = { version = "^0.5", path = "./criterion.rs", features = ["html_reports"] }
 aoc_tools = { version = "0.1.0", path = "../tools" }
