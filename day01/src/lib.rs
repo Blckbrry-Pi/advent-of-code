@@ -1,18 +1,21 @@
-mod pair;
 mod count;
 
 use count::Count;
-use pair::Pair;
 
 aoc_tools::aoc_sol!(day01: part1, part2);
 
 pub fn part1(input: &str) -> i32 {
     let (mut left, mut right) = parse_input(input);
 
-    left.sort();
-    right.sort();
+    left.sort_unstable();
+    right.sort_unstable();
 
-    zipped(left, right).map(diffed).sum()
+    let mut sum = 0;
+    for i in 0..left.len() {
+        sum += (left[i] - right[i]).abs();
+    }
+    
+    sum
 }
 
 pub fn part2(input: &str) -> i32 {
@@ -23,17 +26,27 @@ pub fn part2(input: &str) -> i32 {
 }
 
 fn parse_input(input: &str) -> (Vec<i32>, Vec<i32>) {
-    let lines: Vec<Pair> = input.split('\n')
-        .map(str::parse)
-        .map(Result::unwrap)
-        .collect();
+    const INPUT_LINE_LEN: usize = 14;
+    const NUM_WIDTH: usize = 5;
 
-    Pair::unzip_lists(&lines)
+    let mut l_list = Vec::with_capacity(input.len() / INPUT_LINE_LEN + 5);
+    let mut r_list = Vec::with_capacity(input.len() / INPUT_LINE_LEN + 5);
+
+    let mut i = 0;
+    while i < input.len() {
+        let l = i..i+NUM_WIDTH;
+        let r = i+NUM_WIDTH+3..i+NUM_WIDTH+3+NUM_WIDTH;
+
+        let l = parse_n_5(&input.as_bytes()[l]);
+        let r = parse_n_5(&input.as_bytes()[r]);
+
+        l_list.push(l);
+        r_list.push(r);
+
+        i += INPUT_LINE_LEN;
+    }
+
+    (l_list, r_list)
 }
 
-
-pub fn zipped<L, R>(left: impl IntoIterator<Item = L>, right: impl IntoIterator<Item = R>) -> impl Iterator<Item = (L, R)> {
-    left.into_iter().zip(right)
-}
-
-pub fn diffed((l, r): (i32, i32)) -> i32 { (l - r).abs() }
+aoc_tools::parse_unsigned!(parse_n_5<i32>(= 5 digits));
