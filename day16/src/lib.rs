@@ -1,10 +1,10 @@
 // use std::sync::Arc;
 use std::rc::Rc;
 
-aoc_tools::aoc_sol!(day16 test: part1, part2);
+aoc_tools::aoc_sol!(day16: part1, part2);
 type Scalar = i16;
 type ScoreScalar = u32;
-aoc_tools::pos!(i16);
+aoc_tools::pos!(Scalar; +y => D);
 aoc_tools::fast_hash!();
 
 pub fn part1(input: &str) -> ScoreScalar {
@@ -72,17 +72,11 @@ struct Map {
 
 impl Map {
     fn min_score<const HISTORIES: bool>(&self) -> (ScoreScalar, FastSet<Pos>) {
-        let mut current_vals: FastMap<ReindeerState, (ScoreScalar, History)> = [
-            ReindeerState { pos: self.start, direction: Pos { x: 1, y:  0 } },
-        ].into_iter().map(|v| (
-            v,
-            (0, if HISTORIES {
-                History::Base(ReindeerState { pos: self.start, direction: Pos { x:  1, y:  0 } })
-            } else {
-                History::Null
-            })
-        )).collect();
-        let mut records: FastMap<ReindeerState, ScoreScalar> = current_vals.iter().map(|(&k, (v, _))| (k, *v)).collect();
+        let mut current_vals: FastMap<_, _> = [ReindeerState::start(self.start)]
+            .into_iter()
+            .map(|v| (v, (0, History::Base(v))))
+            .collect();
+        let mut records: FastMap<_, _> = current_vals.iter().map(|(&k, (v, _))| (k, *v)).collect();
         let mut new_vals: FastMap<ReindeerState, (ScoreScalar, Vec<History>)> = new_fastmap_with_capacity(64);
 
         let mut winning_positions = new_fastset_with_capacity(self.clear.len() * 8);
@@ -99,7 +93,6 @@ impl Map {
                     if self.clear_at(new_state.pos) {
                         let old_score = records.get(&new_state).copied().unwrap_or(ScoreScalar::MAX);
                         let curr_score = new_vals.get_mut(&new_state).map(|(a, _)| *a).unwrap_or(ScoreScalar::MAX);
-                        // let new_score = score + 1001;
 
                         if new_score <= old_score {
                             if new_score == curr_score {
@@ -190,6 +183,54 @@ impl Debug for Map {
     }
 }
 
+// #[derive(Debug, Clone)]
+// struct PriorityQueue<T>(Vec<(isize, T)>);
+// impl<T> PriorityQueue<T> {
+//     pub fn new() -> Self {
+//         Self(Vec::new())
+//     }
+
+//     pub fn add(&mut self, priority: isize, v: T) {
+//         let mut idx = self.0.len();
+//         self.0.push((priority, v));
+//         while idx > 0 {
+//             let parent_idx = (idx - 1) / 2;
+//             if self.0[idx].0 < self.0[parent_idx].0 {
+//                 self.0.swap(idx, parent_idx);
+//                 idx = parent_idx
+//             } else { break }
+//         }
+//     }
+
+//     pub fn remove(&mut self) -> Option<(isize, T)> {
+//         if self.0.is_empty() { return None }
+//         let last_idx = self.0.len() - 1;
+//         self.0.swap(0, last_idx);
+//         let output = self.0.pop();
+
+//         let mut idx = 0;
+//         while idx * 2 + 1 < self.0.len() {
+//             let child_a = idx * 2 + 1;
+//             let child_b = idx * 2 + 2;
+
+//             let curr_priority = self.0[idx].0;
+//             let child_a_priority = self.0[child_a].0;
+//             let child_b_priority = self.0.get(child_b).map(|(v, _)| *v).unwrap_or(isize::MAX);
+//             if curr_priority < child_a_priority && curr_priority < child_b_priority { break }
+
+//             if child_a_priority <= child_b_priority {
+//                 self.0.swap(idx, child_a);
+//                 idx = child_a;
+//             } else {
+//                 self.0.swap(idx, child_b);
+//                 idx = child_b;
+//             }
+//         }
+
+//         output
+//     }
+// }
+
 #[derive(Debug, Clone)]
 enum History {
     Null,
@@ -230,6 +271,9 @@ struct ReindeerState {
 }
 
 impl ReindeerState {
+    pub fn start(start: Pos) -> Self {
+        Self { pos: start, direction: Pos::E }
+    }
     pub fn step(&self) -> Self {
         Self {
             pos: self.pos.add(self.direction),
@@ -240,20 +284,14 @@ impl ReindeerState {
     pub fn turn_r(&self) -> Self {
         Self {
             pos: self.pos,
-            direction: Pos {
-                x: -self.direction.y,
-                y: self.direction.x,
-            }
+            direction: self.direction.turn_r(),
         }
     }
 
     pub fn turn_l(&self) -> Self {
         Self {
             pos: self.pos,
-            direction: Pos {
-                x: self.direction.y,
-                y: -self.direction.x,
-            }
+            direction: self.direction.turn_l(),
         }
     }
 }
@@ -261,10 +299,10 @@ impl ReindeerState {
 impl Debug for ReindeerState {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let ch = match self.direction {
-            Pos { x:  0, y: -1 } => '^',
-            Pos { x:  0, y:  1 } => 'v',
-            Pos { x: -1, y:  0 } => '<',
-            Pos { x:  1, y:  0 } => '>',
+            Pos::N => '^',
+            Pos::S => 'v',
+            Pos::W => '<',
+            Pos::E => '>',
             _ => panic!("Invalid direction"),
         };
         write!(f, "{ch}")?;

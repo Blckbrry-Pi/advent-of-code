@@ -2,7 +2,7 @@
 
 aoc_tools::aoc_sol!(day15: part1, part2);
 type Scalar = i16;
-aoc_tools::pos!(Scalar: Debug, Clone, Copy, PartialEq, Eq, Hash);
+aoc_tools::pos!(Scalar; +y => D);
 
 
 pub fn part1(input: &str) -> i32 {
@@ -206,27 +206,8 @@ impl Debug for Warehouse {
 }
 
 impl Pos {
-    const U: Pos = Pos { x:  0, y: -1 };
-    const D: Pos = Pos { x:  0, y:  1 };
-    const L: Pos = Pos { x: -1, y:  0 };
-    const R: Pos = Pos { x:  1, y:  0 };
-
     pub fn gps(self) -> i32 {
         self.x as i32 + self.y as i32 * 100
-    }
-
-    pub fn swap(&self) -> Self {
-        Self {
-            x: self.y,
-            y: self.x,
-        }
-    }
-
-    pub fn abs(&self) -> Self {
-        Self {
-            x: self.x.abs(),
-            y: self.y.abs(),
-        }
     }
 }
 

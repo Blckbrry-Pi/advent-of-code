@@ -1,5 +1,5 @@
 aoc_tools::aoc_sol!(day18: part1, part2);
-aoc_tools::pos!(isize);
+aoc_tools::pos!(isize; +y => D);
 
 pub fn part1(input: &str) -> usize {
     // const BYTES_TO_FALL_FIRST: usize = 12;
@@ -130,11 +130,4 @@ impl Debug for Map {
 
         Ok(())
     }
-}
-
-impl Pos {
-    const N: Self = Self { x:  0, y: -1 };
-    const S: Self = Self { x:  0, y:  1 };
-    const W: Self = Self { x: -1, y:  0 };
-    const E: Self = Self { x:  1, y:  0 };
 }

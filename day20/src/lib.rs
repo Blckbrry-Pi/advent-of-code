@@ -1,6 +1,6 @@
 aoc_tools::aoc_sol!(day20: part1, part2);
 type Scalar = i16;
-aoc_tools::pos!(Scalar);
+aoc_tools::pos!(Scalar; +y=>D);
 aoc_tools::fast_hash!();
 
 pub fn part1(input: &str) -> usize {
@@ -193,9 +193,3 @@ impl Debug for Map {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 struct Cheat(Pos, Pos);
 
-impl Pos {
-    const N: Self = Self { x:  0, y: -1 };
-    const S: Self = Self { x:  0, y:  1 };
-    const W: Self = Self { x: -1, y:  0 };
-    const E: Self = Self { x:  1, y:  0 };
-}

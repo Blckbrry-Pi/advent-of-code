@@ -29,6 +29,27 @@ macro_rules! aoc_sol {
                 $crate::verify(stringify!($day), "2024", parts.into_iter());
             }
         }
+
+        #[test]
+        fn verify_outputs() {
+            #[allow(dead_code)]
+            const TEST: &str = include_str!(concat!("../../data/", stringify!($day), "/test.txt"));
+            const INPUT: &str = include_str!(concat!("../../data/", stringify!($day), "/input.txt"));
+
+            let input = $crate::aoc_sol!(@impl input_type $($input_type)?, TEST, INPUT).trim();
+            let mut parts = Vec::new();
+
+            let mut i = 1;
+            $({
+                let part_start = std::time::Instant::now();
+                let part = $part_fn(input);
+                let part_time = part_start.elapsed();
+                parts.push(part.to_string());
+                i += 1;
+            })+
+
+            $crate::verify(stringify!($day), "2024", parts.into_iter());
+        }
     };
     (@impl input_type test, $test:ident, $input:ident) => {
         $test
@@ -106,13 +127,38 @@ macro_rules! multi_day_bench {
 
 #[macro_export]
 macro_rules! pos {
-    ($inner_type:ty $(: $($derives:ident),+)?) => {
+    ($inner_type:ty $(: $($derives:ident),+)? $(; +y => $dir:ident)?) => {
         // #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
         $crate::pos!(@impl {
             struct Pos { x: $inner_type, y: $inner_type }
     
             #[allow(dead_code)]
             impl Pos {
+                $(
+                    pub const N: Self = Self {
+                        x: 0,
+                        y: $crate::pos!(@impl +y => $dir; N ($inner_type)),
+                    };
+                    pub const U: Self = Self::N;
+
+                    pub const S: Self = Self {
+                        x: 0,
+                        y: $crate::pos!(@impl +y => $dir; S ($inner_type)),
+                    };
+                    pub const D: Self = Self::S;
+
+                    pub const W: Self = Self {
+                        x: (0_u8 as $inner_type).wrapping_sub(1),
+                        y: 0,
+                    };
+                    pub const L: Self = Self::W;
+
+                    pub const E: Self = Self {
+                        x: 1,
+                        y: 0,
+                    };
+                    pub const R: Self = Self::E;
+                )?
                 pub fn add(&self, o: Self) -> Self {
                     Self {
                         x: self.x.wrapping_add(o.x),
@@ -122,8 +168,8 @@ macro_rules! pos {
     
                 pub fn neg(&self) -> Self {
                     Self {
-                        x: 0 - self.x,
-                        y: 0 - self.y
+                        x: (0u8 as $inner_type).wrapping_sub(self.x),
+                        y: (0u8 as $inner_type).wrapping_sub(self.y)
                     }
                 }
     
@@ -140,9 +186,53 @@ macro_rules! pos {
                         y: self.y * s,
                     }
                 }
+
+                pub fn abs(&self) -> Self {
+                    Self {
+                        x: if self.x < 0 { (0_u8 as $inner_type).wrapping_sub(self.x) } else { self.x },
+                        y: if self.y < 0 { (0_u8 as $inner_type).wrapping_sub(self.y) } else { self.y },
+                    }
+                }
+
+                pub fn swap(&self) -> Self {
+                    Self {
+                        x: self.y,
+                        y: self.x,
+                    }
+                }
+
+                $(
+                    pub fn turn_r(&self) -> Self {
+                        const NEW_X_MULT: $inner_type = $crate::pos!(@impl +y => $dir; N ($inner_type));
+                        const NEW_Y_MULT: $inner_type = $crate::pos!(@impl +y => $dir; S ($inner_type));
+
+                        Self {
+                            x: self.y * NEW_X_MULT,
+                            y: self.x * NEW_Y_MULT,
+                        }
+                    }
+                    pub fn turn_l(&self) -> Self {
+                        const NEW_X_MULT: $inner_type = $crate::pos!(@impl +y => $dir; S ($inner_type));
+                        const NEW_Y_MULT: $inner_type = $crate::pos!(@impl +y => $dir; N ($inner_type));
+
+                        Self {
+                            x: self.y * NEW_X_MULT,
+                            y: self.x * NEW_Y_MULT,
+                        }
+                    }
+                )?
+                // pub fn turn_r(&self) -> Self {
+                //     if 
+                // }
             }
         } derives: $($($derives)+)?);
     };
+
+    (@impl +y=>$(U)?$(UP)?$(up)?; N ($inner_type:ty)) => { 1 };
+    (@impl +y=>$(D)?$(DOWN)?$(down)?; N ($inner_type:ty)) => { (0_u8 as $inner_type).wrapping_sub(1) };
+
+    (@impl +y=>$(U)?$(UP)?$(up)?; S ($inner_type:ty)) => { (0_u8 as $inner_type).wrapping_sub(1) };
+    (@impl +y=>$(D)?$(DOWN)?$(down)?; S ($inner_type:ty)) => { 1 };
 
     (@impl { $($input:tt)+ } derives: $($derive:ident)+) => {
         #[derive($($derive),+)]
@@ -293,4 +383,30 @@ pub fn verify(day: &str, year: &str, values: impl Iterator<Item = String>) {
             println!("Part {} ERROR", i + 1);
         }
     }
+}
+
+#[macro_export]
+macro_rules! parse_unsigned {
+    ($fn_name:ident<$type:ty> (=$digits:literal digits)) => {
+        pub fn $fn_name(s: impl AsRef<[u8]>) -> $type {
+            let mut curr: $type = 0;
+            for i in 0..$digits {
+                curr *= 10;
+                curr += (s.as_ref()[i] - b'0') as $type;
+            }
+            curr
+        }
+    };
+    ($fn_name:ident<$type:ty> (<= $digits:literal digits)) => {
+        pub fn $fn_name(s: impl AsRef<[u8]>) -> $type {
+            let mut curr: $type = 0;
+            let mut i = 0;
+            let max = s.as_ref().len().min($digits);
+            for i in 0..max {
+                curr *= 10;
+                curr += (unsafe { *s.as_ref().get(i).unwrap() } - b'0') as $type;
+            }
+            curr
+        }
+    };
 }
