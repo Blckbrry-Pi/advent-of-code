@@ -1,17 +1,17 @@
 aoc_tools::aoc_sol!(day08: part1, part2);
+type Scalar = i16;
+aoc_tools::pos!(Scalar);
 
 pub fn part1(input: &str) -> usize {
     let map = parse_input(input);
 
-    let all_antinodes: HashSet<_> = map.all_antinodes_p1().values().flatten().copied().collect();
-    all_antinodes.len()
+    map.all_antinodes_p1().len()
 }
 
 pub fn part2(input: &str) -> usize {
     let map = parse_input(input);
 
-    let all_antinodes: HashSet<_> = map.all_antinodes_p2().values().flatten().copied().collect();
-    all_antinodes.len()
+    map.all_antinodes_p2().len()
 }
 
 fn parse_input(input: &str) -> Map {
@@ -25,7 +25,7 @@ fn parse_input(input: &str) -> Map {
                 if cell != '.' {
                     antennae.entry(Freq(cell))
                         .or_default()
-                        .insert(Pos { x: x as isize, y: y as isize });
+                        .insert(Pos { x: x as Scalar, y: y as Scalar });
                 }
             }
         ));
@@ -49,8 +49,8 @@ struct Map {
 
 impl Map {
     pub fn has_pos(&self, p: Pos) -> bool {
-        0 <= p.x && p.x < self.width as isize &&
-        0 <= p.y && p.y < self.height as isize
+        0 <= p.x && p.x < self.width as Scalar &&
+        0 <= p.y && p.y < self.height as Scalar
     }
 
     pub fn antinodes_for_p1(&self, a: Pos, b: Pos) -> impl Iterator<Item = Pos> {
@@ -62,67 +62,46 @@ impl Map {
         
         positions.into_iter().flatten()
     }
-    pub fn antinodes_for_p2(&self, a: Pos, b: Pos) -> impl Iterator<Item = Pos> {
+    pub fn antinodes_for_p2<'a>(&'a self, a: Pos, b: Pos) -> impl Iterator<Item = Pos> + 'a {
         let step_a = a.sub(b).simplify();
         let step_b = b.sub(a).simplify();        
 
-        let mut positions = HashSet::new();
-        let mut test_a = a;
-        while self.has_pos(test_a) {
-            positions.insert(test_a);
-            test_a = test_a.add(step_a);
-        }
+        let step_a_iter = (0..)
+            .map(move |s| a.add(step_a.mul(s)))
+            .map_while(|pos| self.has_pos(pos).then_some(pos));
+        let step_b_iter = (0..)
+            .map(move |s| b.add(step_b.mul(s)))
+            .map_while(|pos| self.has_pos(pos).then_some(pos));
 
-        let mut test_b = b;
-        while self.has_pos(test_b) {
-            positions.insert(test_b);
-            test_b = test_b.add(step_b);
-        }
-
-        positions.into_iter()
+        step_a_iter.chain(step_b_iter)
     }
 
-    pub fn antinodes_for<O: Iterator<Item = Pos>>(
-        &self,
+    pub fn antinodes_for<'a, O: Iterator<Item = Pos> + 'a>(
+        &'a self,
         f: Freq,
-        gen_possible_antinodes: impl Fn(&Self, Pos, Pos) -> O,
-    ) -> HashSet<Pos> {
-        let mut positions = HashSet::new();
-        let Some(freq_matches) = self.antennae.get(&f) else {
-            return positions;
-        };
-        for &pos_a in freq_matches {
-            for &pos_b in freq_matches {
-                if pos_a == pos_b {
-                    continue;
-                }
-
-                for antinode in gen_possible_antinodes(self, pos_a, pos_b) {
-                    positions.insert(antinode);
-                }
-            }
-        }
-
-        positions
+        gen_possible_antinodes: &'a impl Fn(&'a Self, Pos, Pos) -> O,
+    ) -> impl Iterator<Item = Pos> + 'a {
+        let freq_matches = self.antennae.get(&f).unwrap();
+        freq_matches.iter()
+            .flat_map(move |&a| freq_matches.iter().filter(move |&&b| a != b).map(move |&b| (a, b)))
+            .flat_map(move |(a, b)| {
+                gen_possible_antinodes(self, a, b)
+            })
     }
 
-    fn all_antinodes<O: Iterator<Item = Pos>>(
-        &self,
-        gen_possible_antinodes: impl Fn(&Self, Pos, Pos) -> O + Clone + Copy,
-    ) -> HashMap<Freq, HashSet<Pos>> {
+    fn all_antinodes<'a, O: Iterator<Item = Pos> + 'a>(
+        &'a self,
+        gen_possible_antinodes: &'a impl Fn(&'a Self, Pos, Pos) -> O,
+    ) -> impl Iterator<Item = Pos> + 'a {
         self.antennae.keys()
-            .map(|&k| (
-                k,
-                self.antinodes_for(k, gen_possible_antinodes),
-            ))
-            .collect()
+            .flat_map(move |&k| self.antinodes_for(k, gen_possible_antinodes))
     }
 
-    pub fn all_antinodes_p1(&self) -> HashMap<Freq, HashSet<Pos>> {
-        self.all_antinodes(Self::antinodes_for_p1)
+    pub fn all_antinodes_p1(&self) -> HashSet<Pos> {
+        self.all_antinodes(&Self::antinodes_for_p1).collect()
     }
-    pub fn all_antinodes_p2(&self) -> HashMap<Freq, HashSet<Pos>> {
-        self.all_antinodes(Self::antinodes_for_p2)
+    pub fn all_antinodes_p2(&self) -> HashSet<Pos> {
+        self.all_antinodes(&Self::antinodes_for_p2).collect()
     }
 }
 
@@ -130,7 +109,7 @@ impl Debug for Map {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         for r in 0..self.height {
             for c in 0..self.width {
-                let pos = Pos { x: c as isize, y: r as isize };
+                let pos = Pos { x: c as Scalar, y: r as Scalar };
                 let mut antenna_found = false;
                 for (freq, antennae_positions) in self.antennae.iter() {
                     if antennae_positions.contains(&pos) {
@@ -157,11 +136,9 @@ impl Debug for Freq {
     }
 }
 
-aoc_tools::pos!(isize);
-
 impl Pos {
     pub fn simplify(&self) -> Self {
-        fn gcd(a: isize, b: isize) -> isize {
+        fn gcd(a: Scalar, b: Scalar) -> Scalar {
             if b == 0 {
                 a
             } else {

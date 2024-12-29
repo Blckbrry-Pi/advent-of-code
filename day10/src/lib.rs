@@ -1,11 +1,12 @@
 aoc_tools::aoc_sol!(day10: part1, part2);
+type Scalar = i16;
+aoc_tools::pos!(Scalar; +y=>D);
 
 pub fn part1(input: &str) -> usize {
     let topography = parse_input(input);
 
     let trailheads: Vec<_> = topography.trailheads()
         .map(|head| get_9s(head, &topography))
-        .map(|nines| nines.len())
         .collect();
 
     trailheads.iter().copied().sum()
@@ -14,15 +15,10 @@ pub fn part1(input: &str) -> usize {
 pub fn part2(input: &str) -> usize {
     let topography = parse_input(input);
 
-    let trailheads: Vec<_> = topography.trailheads()
-        .map(|head| get_9s_paths(head, &topography))
-        .map(|nines| nines.len())
-        .collect();
-
-    trailheads.iter().copied().sum()
+    count_9s_paths(topography.trailheads(), &topography)
 }
 
-fn get_9s(start: Pos, topography: &Topography) -> HashSet<Pos> {
+fn get_9s(start: Pos, topography: &Topography) -> usize {
     let mut curr_positions: HashSet<_> = [start].into_iter().collect();
     let mut new_positions = HashSet::new();
     while topography.get(*curr_positions.iter().next().unwrap()) != 9 {
@@ -32,25 +28,24 @@ fn get_9s(start: Pos, topography: &Topography) -> HashSet<Pos> {
             }
         }
         curr_positions = new_positions;
-        new_positions = HashSet::new();
+        new_positions = HashSet::with_capacity(curr_positions.len() * 3);
     }
-    curr_positions
+    curr_positions.len()
 }
 
-fn get_9s_paths(start: Pos, topography: &Topography) -> HashSet<Vec<Pos>> {
-    let mut curr_paths: HashSet<_> = [vec![start]].into_iter().collect();
-    let mut new_paths = HashSet::new();
-    while topography.get(*curr_paths.iter().next().unwrap().last().unwrap()) != 9 {
-        for path in curr_paths {
-            for candidate in topography.adjacent_iter(*path.last().unwrap()) {
-                let new_path = path.iter().copied().chain([candidate]);
-                new_paths.insert(new_path.collect());
+fn count_9s_paths(starts: impl Iterator<Item = Pos>, topography: &Topography) -> usize {
+    let mut curr_paths: HashMap<_, _> = starts.map(|p| (p, 1)).collect();
+    let mut new_paths = HashMap::new();
+    while topography.get(*curr_paths.iter().next().unwrap().0) != 9 {
+        for (pos, count) in curr_paths {
+            for candidate in topography.adjacent_iter(pos) {
+                *new_paths.entry(candidate).or_default() += count;
             }
         }
         curr_paths = new_paths;
-        new_paths = HashSet::new();
+        new_paths = HashMap::with_capacity(curr_paths.len() * 2);
     }
-    curr_paths
+    curr_paths.into_values().sum()
 }
 
 fn parse_input(input: &str) -> Topography {
@@ -71,9 +66,9 @@ impl Topography {
     pub fn width(&self) -> usize { self.levels[0].len() }
     pub fn height(&self) -> usize { self.levels.len() }
     pub fn get(&self, pos: Pos) -> u8 {
-        if 0 > pos.x || pos.x >= self.width() as isize {
+        if 0 > pos.x || pos.x >= self.width() as Scalar {
             255
-        } else if 0 > pos.y || pos.y >= self.height() as isize {
+        } else if 0 > pos.y || pos.y >= self.height() as Scalar {
             255
         } else {
             self.levels[pos.y as usize][pos.x as usize]
@@ -81,12 +76,16 @@ impl Topography {
     }
     pub fn adjacent_iter(&self, pos: Pos) -> impl Iterator<Item = Pos> + '_ {
         let at = self.get(pos);
-        let candidates = if at == 255 {
-            vec![]
-        } else {
-            vec![pos.up(), pos.left(), pos.down(), pos.right()]
-        };
-        candidates.into_iter().filter(move |v| self.get(*v) == at + 1)
+        // let candidates = if at == 255 {
+        //     vec![]
+        // } else {
+        //     vec![pos.add(Pos::N), pos.add(Pos::S), pos.add(Pos::W), pos.add(Pos::E)]
+        // };
+        [pos.add(Pos::N), pos.add(Pos::S), pos.add(Pos::W), pos.add(Pos::E)]
+            .into_iter()
+            // .filter(move |_| at != 255)
+            .filter(move |v| self.get(*v) == at + 1)
+        // candidates.into_iter().filter(move |v| self.get(*v) == at + 1)
     }
 
     pub fn trailheads(&self) -> impl Iterator<Item = Pos> + '_ {
@@ -96,7 +95,7 @@ impl Topography {
                 row.iter()
                     .enumerate()
                     .filter_map(move |(x, &cell)| {
-                        (cell == 0).then_some(Pos { x: x as isize, y: y as isize })
+                        (cell == 0).then_some(Pos { x: x as Scalar, y: y as Scalar })
                     })
             })
     }
@@ -110,37 +109,5 @@ impl Debug for Topography {
             writeln!(f)?;
         }
         Ok(())
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-struct Pos {
-    x: isize,
-    y: isize,
-}
-impl Pos {
-    pub fn up(&self) -> Pos {
-        Self {
-            x: self.x,
-            y: self.y - 1,
-        }
-    }
-    pub fn down(&self) -> Pos {
-        Self {
-            x: self.x,
-            y: self.y + 1,
-        }
-    }
-    pub fn left(&self) -> Pos {
-        Self {
-            x: self.x - 1,
-            y: self.y,
-        }
-    }
-    pub fn right(&self) -> Pos {
-        Self {
-            x: self.x + 1,
-            y: self.y,
-        }
     }
 }

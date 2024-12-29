@@ -1,6 +1,6 @@
 aoc_tools::aoc_sol!(day13: part1, part2);
 
-aoc_tools::pos!(isize);
+aoc_tools::pos!(i64);
 
 pub fn part1(input: &str) -> usize {
     let machines = parse_input(input);
@@ -34,19 +34,29 @@ pub fn part2(input: &str) -> usize {
 fn parse_input(input: &str) -> Vec<Machine> {
     input.split("\n\n")
         .map(|machine| {
-            let (a, rest) = machine.split_once('\n').unwrap();
-            let (b, prize) = rest.split_once('\n').unwrap();
-            let a = a.trim_start_matches("Button A: X+");
-            let b = b.trim_start_matches("Button B: X+");
-            let prize = prize.trim_start_matches("Prize: X=");
+            const BUTTON_LINE_LEN: usize = "Button _: X+__, Y+__".len();
+            let (a, b, prize) = (
+                &machine[12..BUTTON_LINE_LEN],
+                &machine[BUTTON_LINE_LEN+13..BUTTON_LINE_LEN*2+1],
+                &machine[BUTTON_LINE_LEN*2+11..],
+            );
+            // let (a, rest) = machine.split_once('\n').unwrap();
+            // let (b, prize) = rest.split_once('\n').unwrap();
+            // let a = a.trim_start_matches("Button A: X+");
+            // let a = &a[12..]; // "Button A: X+"
+            // let b = &b[12..]; // "Button B: X+"
+            // let prize = &prize[9..]; // "Prize: X="
 
-            let (a_x, a_y) = a.split_once(", Y+").unwrap();
-            let (b_x, b_y) = b.split_once(", Y+").unwrap();
-            let (prize_x, prize_y) = prize.split_once(", Y=").unwrap();
+            let a_split = 2;
+            let b_split = 2;
+            let prize_split = prize.find(',').unwrap();
+            let (a_x, a_y) = (&a[..a_split], &a[a_split+4..]); // ", Y+"
+            let (b_x, b_y) = (&b[..b_split], &b[b_split+4..]); // ", Y+"
+            let (prize_x, prize_y) = (&prize[..prize_split], &prize[prize_split+4..]); // ", Y="
 
-            let (a_x, a_y) = (a_x.parse().unwrap(), a_y.parse().unwrap());
-            let (b_x, b_y) = (b_x.parse().unwrap(), b_y.parse().unwrap());
-            let (prize_x, prize_y) = (prize_x.parse().unwrap(), prize_y.parse().unwrap());
+            let (a_x, a_y) = (parse_i64(a_x), parse_i64(a_y));
+            let (b_x, b_y) = (parse_i64(b_x), parse_i64(b_y));
+            let (prize_x, prize_y) = (parse_i64(prize_x), parse_i64(prize_y));
 
             Machine {
                 a: Pos { x: a_x, y: a_y },
@@ -56,6 +66,8 @@ fn parse_input(input: &str) -> Vec<Machine> {
         })
         .collect()
 }
+
+aoc_tools::parse_unsigned!(parse_i64<i64>(<= 6 digits));
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 struct Machine {
@@ -74,7 +86,7 @@ impl Machine {
         }
     }
 
-    pub fn solve(&self) -> (isize, isize) {
+    pub fn solve(&self) -> (i64, i64) {
         // A * a.x + B * b.x = p.x
         // A * a.y + B * b.y = p.y
 
@@ -100,7 +112,7 @@ impl Machine {
         (a_coeff, b_coeff)
     }
 
-    pub fn solve_valid(&self, a: isize, b: isize) -> bool {
+    pub fn solve_valid(&self, a: i64, b: i64) -> bool {
         a >= 0 && b >= 0 && self.a.mul(a).add(self.b.mul(b)) == self.prize
     }
 }

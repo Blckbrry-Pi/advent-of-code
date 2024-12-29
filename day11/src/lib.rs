@@ -3,14 +3,12 @@ aoc_tools::aoc_sol!(day11: part1, part2);
 pub fn part1(input: &str) -> u64 {
     let mut rocks = parse_input(input);
     for _ in 0..25 { rocks = Rock::blink_all(&rocks); }
-
     Rock::size(&rocks)
 }
 
 pub fn part2(input: &str) -> u64 {
     let mut rocks = parse_input(input);
     for _ in 0..75 { rocks = Rock::blink_all(&rocks); }
-
     Rock::size(&rocks)
 }
 
@@ -32,26 +30,42 @@ fn parse_input(input: &str) -> HashMap<Rock, u64> {
 struct Rock(u64);
 
 impl Rock {
-    pub fn digits(&self) -> u64 {
-        let mut curr = self.0;
-        let mut digits = 0;
-        while curr > 0 {
-            curr /= 10;
-            digits += 1;
+    pub fn digits(&self) -> (u64, u64) {
+        match self.0 {
+            ..10 => (1, 1),
+            ..100 => (2, 10),
+            ..1_000 => (3, 10),
+            ..10_000 => (4, 100),
+            ..100_000 => (5, 100),
+            ..1_000_000 => (6, 1_000),
+            ..10_000_000 => (7, 1_000),
+            ..100_000_000 => (8, 10_000),
+            ..1_000_000_000 => (9, 10_000),
+            ..10_000_000_000 => (10, 100_000),
+            ..100_000_000_000 => (11, 100_000),
+            ..1_000_000_000_000 => (12, 1_000_000),
+            ..10_000_000_000_000 => (13, 1_000_000),
+            ..100_000_000_000_000 => (14, 10_000_000),
+            ..1_000_000_000_000_000 => (15, 10_000_000),
+            ..10_000_000_000_000_000 => (16, 100_000_000),
+            ..100_000_000_000_000_000 => (17, 100_000_000),
+            ..1_000_000_000_000_000_000 => (18, 1_000_000_000),
+            ..10_000_000_000_000_000_000 => (19, 1_000_000_000),
+            _ => (20, 10_000_000_000),
         }
-        digits
     }
     pub fn blink(&self) -> (Self, Option<Self>) {
-        let digits = self.digits();
         if self.0 == 0 {
             (Rock(1), None)
-        } else if digits % 2 == 1 {
-            (Rock(self.0 * 2024), None)
         } else {
-            let split = 10_u64.pow(digits as u32 / 2);
-            let rock_l = self.0 / split;
-            let rock_r = self.0 % split;
-            (Rock(rock_l), Some(Rock(rock_r)))
+            let (digits, split) = self.digits();
+            if digits & 1 == 1 {
+                (Rock(self.0 * 2024), None)
+            } else {
+                let rock_l = self.0 / split;
+                let rock_r = self.0 % split;
+                (Rock(rock_l), Some(Rock(rock_r)))
+            }
         }
     }
     pub fn blink_add(&self, rocks: &mut HashMap<Rock, u64>, multiples: u64) {
