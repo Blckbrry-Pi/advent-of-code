@@ -28,6 +28,17 @@ aoc_tools::day_bench!(day23);
 aoc_tools::day_bench!(day24);
 aoc_tools::day_bench!(day25);
 
+// aoc_tools::day_bench!(day01 2022: day01_2022);
+// aoc_tools::day_bench!(day02 2022: day02_2022);
+// aoc_tools::day_bench!(day16 2022: day16_2022);
+aoc_tools::day_bench!(day17 2022: day17_2022);
+// aoc_tools::day_bench!(day18 2022: day18_2022);
+// aoc_tools::day_bench!(day19 2022: day19_2022);
+aoc_tools::day_bench!(day20 2022: day20_2022);
+aoc_tools::day_bench!(day21 2022: day21_2022);
+aoc_tools::day_bench!(day23 2022: day23_2022);
+aoc_tools::day_bench!(day24 2022: day24_2022);
+
 criterion_main!(
     day01::day01,
     day02::day02,
@@ -54,4 +65,15 @@ criterion_main!(
     day23::day23,
     day24::day24,
     day25::day25,
+
+    // day01_2022::day01_2022,
+    // day02_2022::day02_2022,
+    // day16_2022::day16_2022,
+    day17_2022::day17_2022,
+    // day18_2022::day18_2022,
+    // day19_2022::day19_2022,
+    day20_2022::day20_2022,
+    day21_2022::day21_2022,
+    day23_2022::day23_2022,
+    day24_2022::day24_2022,
 );

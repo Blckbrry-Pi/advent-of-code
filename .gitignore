@@ -3,3 +3,4 @@ data
 .aoc_cookie
 disasm
 flamegraph.svg
+.git_old/

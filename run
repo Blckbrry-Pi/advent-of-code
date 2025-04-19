@@ -5,7 +5,7 @@ year=$2
 
 year_with_default=2024
 
-release=$3
+profile=$3
 
 if [ "$day" = "" ]; then
     echo "Missing day"
@@ -21,13 +21,22 @@ if [ "$year" != "" ] && [ "$year" != 2024 ]; then
     year_with_default="$year"
 fi
 
-CMD="cargo run -q --bin $binaryname"
-
-if [ "$release" = "release" ]; then
-    CMD="$CMD --release"
+BASE_CMD="cargo run -q"
+if [ "$profile" = "flamegraph" ]; then
+    BASE_CMD="sudo cargo flamegraph"
 fi
 
-if [ "$release" = "nobuild" ]; then
+CMD="$BASE_CMD --bin $binaryname"
+
+if [ "$profile" = "release" ]; then
+    CMD="$CMD --release"
+fi
+if [ "$profile" = "flamegraph" ]; then
+    CMD="$CMD --profile flamegraph"
+#    CMD="$CMD --dev"
+fi
+
+if [ "$profile" = "nobuild" ]; then
     if [ "$$CARGO_TARGET_DIR" = "" ]; then
         CARGO_TARGET_DIR="target"
     fi

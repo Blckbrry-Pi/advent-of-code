@@ -3,8 +3,11 @@ name = "aoc_tools"
 version = "0.1.0"
 edition = "2021"
 
+[features]
+arena = ["ferroc"]
+
 [dependencies]
-ferroc = { version = "^1.0.0-pre.3", git = "https://github.com/js2xxx/ferroc.git" }
+ferroc = { version = "^1.0.0-pre.3", git = "https://github.com/js2xxx/ferroc.git", optional = true }
 reqwest = { version = "0.12", features = ["blocking"] }
 
 [dependencies.xxhash-rust]

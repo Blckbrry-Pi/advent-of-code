@@ -1,6 +1,6 @@
 #[macro_export]
 macro_rules! aoc_sol {
-    ($day:ident $($input_type:ident)?: $($part_fn:ident),+) => {
+    ($day:ident $($year:literal)? $($input_type:ident)?: $($part_fn:ident),+) => {
         #[allow(dead_code)]
         use std::fmt::Debug;
         #[allow(dead_code)]
@@ -9,10 +9,10 @@ macro_rules! aoc_sol {
         #[allow(dead_code)]
         pub fn main() {
             #[allow(dead_code)]
-            const TEST: &str = include_str!(concat!("../../data/", stringify!($day), "/test.txt"));
-            const INPUT: &str = include_str!(concat!("../../data/", stringify!($day), "/input.txt"));
+            const TEST: &str = $crate::input_file!(relative $day $(($year))? -> "test.txt");
+            const INPUT: &str = $crate::input_file!(relative $day $(($year))? -> "input.txt");
 
-            let input = $crate::aoc_sol!(@impl input_type $($input_type)?, TEST, INPUT).trim();
+            let input = $crate::aoc_sol!(@impl input_type $($input_type)?, TEST, INPUT);
             let mut parts = Vec::new();
 
             let mut i = 1;
@@ -26,17 +26,18 @@ macro_rules! aoc_sol {
             })+
 
             if std::env::var("VERIFY_OUTPUT").is_ok() {
-                $crate::verify(stringify!($day), "2024", parts.into_iter());
+                let year = [$($year,)? 2024][0].to_string();
+                $crate::verify(stringify!($day), &year, parts.into_iter());
             }
         }
 
         #[test]
         fn verify_outputs() {
             #[allow(dead_code)]
-            const TEST: &str = include_str!(concat!("../../data/", stringify!($day), "/test.txt"));
-            const INPUT: &str = include_str!(concat!("../../data/", stringify!($day), "/input.txt"));
+            const TEST: &str = $crate::input_file!(relative $day $(($year))? -> "test.txt");
+            const INPUT: &str = $crate::input_file!(relative $day $(($year))? -> "input.txt");
 
-            let input = $crate::aoc_sol!(@impl input_type $($input_type)?, TEST, INPUT).trim();
+            let input = $crate::aoc_sol!(@impl input_type $($input_type)?, TEST, INPUT);
             let mut parts = Vec::new();
 
             let mut i = 1;
@@ -48,7 +49,8 @@ macro_rules! aoc_sol {
                 i += 1;
             })+
 
-            $crate::verify(stringify!($day), "2024", parts.into_iter());
+            let year = [$($year,)? 2024][0].to_string();
+            $crate::verify(stringify!($day), &year, parts.into_iter());
         }
     };
     (@impl input_type test, $test:ident, $input:ident) => {
@@ -61,33 +63,58 @@ macro_rules! aoc_sol {
 
 #[macro_export]
 macro_rules! day_bench {
-    ($day:ident) => {
-        mod $day {
+    ($day:ident) => { $crate::day_bench! { @impl $day, $day, } };
+    ($day:ident $year:literal: $module:ident) => { $crate::day_bench! { @impl $module, $day, $year } };
+    (@impl $module:ident, $day:ident, $($year:literal)?) => {
+        mod $module {
             use criterion::{ criterion_group, Criterion, SamplingMode::AutoMin };
             use std::hint::black_box;
 
-            const INPUT: &str = include_str!(concat!("../../data/", stringify!($day), "/input.txt"));
+            const INPUT: &str = $crate::input_file!(bench $day $(($year))? -> "input.txt");
 
             fn p1(c: &mut criterion::Criterion) {
                 let number = stringify!($day).trim_start_matches("day");
+                #[allow(dead_code)]
                 let name = format!("Day {number} Part 1");
-                c.bench_function(&name, |b| b.iter(|| ::$day::part1(black_box(INPUT.trim()))));
+                $(
+                    let name = format!("{} day {number} Part 1", $year);
+                )?
+                c.bench_function(&name, |b| b.iter(|| ::$module::part1(black_box(INPUT))));
             }
 
             fn p2(c: &mut criterion::Criterion) {
                 let number = stringify!($day).trim_start_matches("day");
                 let name = format!("Day {number} Part 2");
-                c.bench_function(&name, |b| b.iter(|| ::$day::part2(black_box(INPUT.trim()))));
+                $(
+                    let name = format!("{} day {number} Part 2", $year);
+                )?
+                c.bench_function(&name, |b| b.iter(|| ::$module::part2(black_box(INPUT))));
             }
 
             criterion_group! {
-                name = $day;
+                name = $module;
                 config = Criterion::default()
                     .measurement_time(std::time::Duration::from_secs(10))
                     .sampling_mode(AutoMin(10));
                 targets = p1, p2
             }
         }
+    };
+}
+
+#[macro_export]
+macro_rules! input_file {
+    (bench $day:ident ($year:literal) -> $file:literal) => {
+        include_str!(concat!("../../data/", $year, "/", stringify!($day), "/", $file))
+    };
+    (relative $day:ident ($year:literal) -> $file:literal) => {
+        include_str!(concat!("../../../data/", $year, "/", stringify!($day), "/", $file))
+    };
+    (bench $day:ident -> $file:literal) => {
+        include_str!(concat!("../../data/", stringify!($day), "/", $file))
+    };
+    (relative $day:ident -> $file:literal) => {
+        include_str!(concat!("../../data/", stringify!($day), "/", $file))
     };
 }
 
@@ -110,8 +137,8 @@ macro_rules! multi_day_bench {
                 let name = concat!("Multiday ", stringify!($multiday_name));
                 c.bench_function(name, |b| b.iter(|| {
                     $(
-                        ::$day::part1(black_box(inputs::$day.trim()));
-                        ::$day::part2(black_box(inputs::$day.trim()));
+                        ::$day::part1(black_box(inputs::$day));
+                        ::$day::part2(black_box(inputs::$day));
                     )+
                 }));
             }
@@ -221,9 +248,20 @@ macro_rules! pos {
                         }
                     }
                 )?
-                // pub fn turn_r(&self) -> Self {
-                //     if 
-                // }
+
+                pub fn manhattan(&self, o: Self) -> $inner_type {
+                    let x_diff = if self.x > o.x {
+                        self.x - o.x
+                    } else {
+                        o.x - self.x
+                    };
+                    let y_diff = if self.y > o.y {
+                        self.y - o.y
+                    } else {
+                        o.y - self.y
+                    };
+                    x_diff + y_diff
+                }
             }
         } derives: $($($derives)+)?);
     };
@@ -245,6 +283,7 @@ macro_rules! pos {
 }
 
 #[macro_export]
+#[cfg(feature = "arena")]
 macro_rules! arena {
     ($($feature:ident)?) => {
         use $crate::__hidden_ferroc::Ferroc;
@@ -253,6 +292,11 @@ macro_rules! arena {
         #[global_allocator]
         static FERROC: Ferroc = Ferroc;
     };
+}
+#[macro_export]
+#[cfg(not(feature = "arena"))]
+macro_rules! arena {
+    ($($feature:ident)?) => {}
 }
 
 #[macro_export]
@@ -355,6 +399,11 @@ pub mod __hidden_hasher {
     }
 }
 
+use std::fmt::{Debug, Formatter};
+use std::hash::{Hash, Hasher};
+use std::mem::MaybeUninit;
+use std::ops::Deref;
+#[cfg(feature = "arena")]
 #[doc(hidden)]
 pub use ferroc as __hidden_ferroc;
 
@@ -409,4 +458,223 @@ macro_rules! parse_unsigned {
             curr
         }
     };
+}
+
+pub enum SmallVec<const N: usize, T> {
+    Stack([MaybeUninit<T>; N], usize),
+    Heap(Vec<T>),
+}
+impl<const N: usize, T> SmallVec<N, T> {
+    pub fn new() -> Self {
+        Self::Stack([const { MaybeUninit::uninit() }; N], 0)
+    }
+    pub fn push(&mut self, t: T) {
+        match self {
+            Self::Stack(data, len) => {
+                if *len < N {
+                    data[*len] = MaybeUninit::new(t);
+                    *len += 1;
+                } else {
+                    *len = 0;
+                    *self = Self::Heap(
+                        data.iter_mut()
+                            .map(|t| (t, MaybeUninit::uninit()))
+                            .map(|(t, replacement)| std::mem::replace(t, replacement))
+                            .map(|t| unsafe { t.assume_init() })
+                            .collect(),
+                    );
+                    self.push(t);
+                }
+            },
+            Self::Heap(data) => {
+                data.push(t);
+            }
+        }
+    }
+    pub fn pop(&mut self) -> Option<T> {
+        match self {
+            Self::Stack(_, 0) => None,
+            Self::Stack(data, len) => {
+                *len -= 1;
+                let output = std::mem::replace(&mut data[*len], MaybeUninit::uninit());
+                unsafe { Some(output.assume_init()) }
+            },
+            Self::Heap(data) => {
+                let output = data.pop();
+                if data.len() <= N {
+                    let len = data.len();
+                    let mut new_data = [const { MaybeUninit::uninit() }; N];
+                    data.drain(..)
+                        .enumerate()
+                        .for_each(|(i, t)| new_data[i] = MaybeUninit::new(t));
+                    *self = Self::Stack(new_data, len);
+                }
+                output
+            }
+        }
+    }
+
+    pub fn len(&self) -> usize {
+        match self {
+            Self::Stack(_, len) => *len,
+            Self::Heap(data) => data.len(),
+        }
+    }
+
+    pub fn iter(&self) -> SmallVecIter<N, T> {
+        match self {
+            Self::Heap(data) => SmallVecIter::Heap(data.iter()),
+            Self::Stack(data, len) => SmallVecIter::Stack(data, *len, 0),
+        }
+    }
+}
+impl<const N: usize, T> IntoIterator for SmallVec<N, T> {
+    type Item = T;
+    type IntoIter = SmallVecIntoIter<N, T>;
+    fn into_iter(self) -> Self::IntoIter {
+        match self {
+            Self::Heap(data) => SmallVecIntoIter::Heap(data.into_iter()),
+            Self::Stack(data, len) => SmallVecIntoIter::Stack(data, len, 0),
+        }
+    }
+}
+impl<const N: usize, T> FromIterator<T> for SmallVec<N, T> {
+    fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> Self {
+        let mut output = Self::new();
+        for value in iter {
+            output.push(value);
+        }
+        output
+    }
+}
+impl<const N: usize, T: Debug> Debug for SmallVec<N, T> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        let mut list = f.debug_list();
+        for i in 0..self.len() {
+            list.entry(&self[i]);
+        }
+        list.finish()
+    }
+}
+impl<const N: usize, T: Clone> Clone for SmallVec<N, T> {
+    fn clone(&self) -> Self {
+        match self {
+            Self::Heap(data) => Self::Heap(data.clone()),
+            Self::Stack(data, len) => {
+                let mut cloned_data = [const { MaybeUninit::uninit() }; N];
+                for i in 0..*len {
+                    cloned_data[i] = unsafe { MaybeUninit::new(data[i].assume_init_ref().clone()) };
+                }
+                Self::Stack(cloned_data, *len)
+            }
+        }
+    }
+}
+impl<const N: usize, T: PartialEq> PartialEq for SmallVec<N, T> {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Self::Heap(data_a), Self::Heap(data_b)) => {
+                data_a.eq(data_b)
+            },
+            (Self::Stack(data_a, len_a), Self::Stack(data_b, len_b)) => {
+                if len_a != len_b { return false; }
+                for i in 0..*len_a {
+                    if unsafe { data_a[i].assume_init_ref() != data_b[i].assume_init_ref() } {
+                        return false;
+                    }
+                }
+                true
+            }
+            _ => false,
+        }
+    }
+}
+impl<const N: usize, T: Eq> Eq for SmallVec<N, T> {}
+
+impl<const N: usize, T: Hash> Hash for SmallVec<N, T> {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+    }
+}
+
+impl<const N: usize, T> Default for SmallVec<N, T> {
+    fn default() -> Self { Self::new() }
+}
+
+impl<const N: usize, T> Deref for SmallVec<N, T> {
+    type Target = [T];
+    fn deref(&self) -> &[T] {
+        match self {
+            Self::Heap(data) => data.as_slice(),
+            Self::Stack(data, len) => {
+                unsafe { &*(&data[0..*len] as *const [MaybeUninit<T>] as *const [T]) }
+            }
+        }
+    }
+}
+
+pub enum SmallVecIntoIter<const N: usize, T> {
+    Stack([MaybeUninit<T>; N], usize, usize),
+    Heap(std::vec::IntoIter<T>),
+}
+impl<const N: usize, T> Iterator for SmallVecIntoIter<N, T> {
+    type Item = T;
+    fn next(&mut self) -> Option<Self::Item> {
+        match self {
+            Self::Stack(data, len, idx) => if idx >= len {
+                None
+            } else {
+                *idx += 1;
+                let output = std::mem::replace(&mut data[*idx], MaybeUninit::uninit());
+                unsafe { Some(output.assume_init()) }
+            },
+            Self::Heap(data) => data.next(),
+        }
+    }
+}
+
+pub enum SmallVecIter<'a, const N: usize, T> {
+    Stack(&'a [MaybeUninit<T>; N], usize, usize),
+    Heap(std::slice::Iter<'a, T>),
+}
+impl<'a, const N: usize, T> Iterator for SmallVecIter<'a, N, T> {
+    type Item = &'a T;
+    fn next(&mut self) -> Option<Self::Item> {
+        match self {
+            Self::Stack(data, len, idx) => if idx >= len {
+                None
+            } else {
+                let output = unsafe { data[*idx].assume_init_ref() };
+                *idx += 1;
+                Some(output)
+            },
+            Self::Heap(data) => data.next(),
+        }
+    }
+}
+
+impl<const N: usize, T> std::ops::Index<usize> for SmallVec<N, T> {
+    type Output = T;
+    fn index(&self, idx: usize) -> &Self::Output {
+        match self {
+            Self::Stack(data, len) => if idx >= *len {
+                panic!("Index out of bounds");
+            } else {
+                unsafe { data[idx].assume_init_ref() }
+            },
+            Self::Heap(data) => &data[idx],
+        }
+    }
+}
+
+impl<const N: usize, T> std::ops::IndexMut<usize> for SmallVec<N, T> {
+    fn index_mut(&mut self, idx: usize) -> &mut Self::Output {
+        match self {
+            Self::Stack(data, len) => if idx >= *len {
+                panic!("Index out of bounds");
+            } else {
+                unsafe { data[idx].assume_init_mut() }
+            },
+            Self::Heap(data) => data.iter_mut().nth(idx).unwrap(),
+        }
+    }
 }

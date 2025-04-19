@@ -1,6 +1,6 @@
 use criterion::criterion_main;
 
-aoc_tools::arena!(arena);
+// aoc_tools::arena!(arena);
 
 aoc_tools::multi_day_bench!(
     bench_2024:
