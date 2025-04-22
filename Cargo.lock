@@ -303,6 +303,7 @@ dependencies = [
  "day21",
  "day21-2022",
  "day22",
+ "day22-2022",
  "day23",
  "day23-2022",
  "day24",

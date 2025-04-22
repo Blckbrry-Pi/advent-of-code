@@ -36,6 +36,7 @@ aoc_tools::day_bench!(day17 2022: day17_2022);
 // aoc_tools::day_bench!(day19 2022: day19_2022);
 aoc_tools::day_bench!(day20 2022: day20_2022);
 aoc_tools::day_bench!(day21 2022: day21_2022);
+aoc_tools::day_bench!(day22 2022: day22_2022);
 aoc_tools::day_bench!(day23 2022: day23_2022);
 aoc_tools::day_bench!(day24 2022: day24_2022);
 
@@ -74,6 +75,7 @@ criterion_main!(
     // day19_2022::day19_2022,
     day20_2022::day20_2022,
     day21_2022::day21_2022,
+    day22_2022::day22_2022,
     day23_2022::day23_2022,
     day24_2022::day24_2022,
 );
