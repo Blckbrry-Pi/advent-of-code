@@ -634,6 +634,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "day08-2021"
+version = "0.1.0"
+dependencies = [
+ "aoc_tools",
+]
+
+[[package]]
 name = "day08-2024"
 version = "0.1.0"
 dependencies = [
