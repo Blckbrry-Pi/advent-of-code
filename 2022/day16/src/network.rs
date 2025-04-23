@@ -7,7 +7,7 @@ pub struct Network {
     pub nodes: HashMap<Valve, Node>,
     pub lookup: HashMap<[char; 2], Valve>,
     pub reverse_lookup: HashMap<Valve, [char; 2]>,
-    pub opening_chain: Vec<(Valve, u32)>,
+    pub opening_chain: Vec<(Valve, u16)>,
 }
 impl Network {
     pub fn get(&self, valve: Valve) -> Option<&Node> {
@@ -88,17 +88,33 @@ impl FromStr for Network {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
-pub struct Valve(NonZeroU64);
+pub struct PackedValve(u8);
+impl PackedValve {
+    pub fn inner(&self) -> u8 {
+        self.0
+    }
+    pub fn unpacked(self) -> Valve {
+        Valve(NonZeroU64::new(1_u64 << self.0).unwrap())
+    }
+}
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub struct Valve(NonZeroU64);
+impl Valve {
+    pub fn packed(self) -> PackedValve {
+        PackedValve(self.0.trailing_zeros() as u8)
+    }
+}
 
 pub struct ValveIter {
     conns: u64,
     i: u64,
+    max: u64,
 }
 impl Iterator for ValveIter {
     type Item = Valve;
     fn next(&mut self) -> Option<Self::Item> {
-        if self.i == 0 {
+        if self.i == 0 || self.i > self.max {
             None
         } else if self.conns & self.i != 0 {
             let i = NonZeroU64::new(self.i).unwrap();
@@ -114,6 +130,9 @@ impl Iterator for ValveIter {
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct ValveSet(u64);
 impl ValveSet {
+    pub fn inner(&self) -> u64 {
+        self.0
+    }
     pub fn empty() -> Self {
         Self(0)
     }
@@ -131,7 +150,11 @@ impl IntoIterator for ValveSet {
     type IntoIter = ValveIter;
     type Item = Valve;
     fn into_iter(self) -> Self::IntoIter {
-        ValveIter { conns: self.0, i: 1 }
+        ValveIter {
+            conns: self.0,
+            i: 1 << self.0.trailing_zeros(),
+            max: 1 << (63 - self.0.leading_zeros())
+        }
     }
 }
 
@@ -152,12 +175,15 @@ impl Debug for ValveSetDebugger<'_> {
 
 #[derive(Clone, Copy)]
 pub struct Node {
-    flow_rate: u32,
+    flow_rate: u16,
     connections: ValveSet,
 }
 impl Node {
-    pub fn flow_rate(&self) -> u32 {
+    pub fn flow_rate(&self) -> u16 {
         self.flow_rate
+    }
+    pub fn connectivity(&self) -> u8 {
+        self.connections.0.count_ones() as u8
     }
     pub fn connections(&self) -> impl Iterator<Item = Valve> {
         self.connections.into_iter()
@@ -176,7 +202,7 @@ impl Node {
             .or(s.split_once("; tunnel leads to valve "))
             .ok_or("missing connections".to_string())?;
 
-        let flow_rate = flow_rate.parse::<u32>().map_err(|e| e.to_string())?;
+        let flow_rate = flow_rate.parse::<u16>().map_err(|e| e.to_string())?;
 
         let connections = s.split(", ")
             .map(|ident| [ident.as_bytes()[0] as char, ident.as_bytes()[1] as char])

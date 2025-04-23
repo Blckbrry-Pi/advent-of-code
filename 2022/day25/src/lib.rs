@@ -1,6 +1,8 @@
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 
+use aoc_tools::SmallVec;
+
 aoc_tools::aoc_sol!(day25 2022: part1);
 
 pub fn part1(input: &str) -> Number {
@@ -19,8 +21,11 @@ fn from_balanced_quinary(balanced: impl Iterator<Item = Digit>) -> i64 {
     }
     value
 }
-fn to_balanced_quinary(input: i64) -> Vec<Digit> {
-    let mut digits = vec![];
+
+const MAX_DIGITS: usize = i64::BITS as usize * 3 / 7;
+
+fn to_balanced_quinary(input: i64) -> SmallVec<MAX_DIGITS, Digit> {
+    let mut digits = SmallVec::new();
     let digit_count = (input * 2 - 1).ilog(5) + 1;
     let offset = from_balanced_quinary(std::iter::repeat(Digit::Plu2).take(digit_count as usize));
     let mut remaining = input + offset;
@@ -74,10 +79,10 @@ impl FromStr for Digit {
 }
 
 #[derive(Clone, PartialEq, Eq)]
-pub struct Number(Vec<Digit>);
+pub struct Number(SmallVec<MAX_DIGITS, Digit>);
 impl Display for Number {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        for &digit in &self.0 {
+        for &digit in self.0.iter() {
             write!(f, "{digit:?}")?;
         }
         Ok(())

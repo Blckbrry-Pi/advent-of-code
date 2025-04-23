@@ -408,7 +408,7 @@ pub mod __hidden_hasher {
 use std::fmt::{Debug, Formatter};
 use std::hash::{Hash, Hasher};
 use std::mem::MaybeUninit;
-use std::ops::Deref;
+use std::ops::{Deref, DerefMut};
 #[cfg(feature = "arena")]
 #[doc(hidden)]
 pub use ferroc as __hidden_ferroc;
@@ -624,6 +624,16 @@ impl<const N: usize, T> Deref for SmallVec<N, T> {
             Self::Heap(data) => data.as_slice(),
             Self::Stack(data, len) => {
                 unsafe { &*(&data[0..*len] as *const [MaybeUninit<T>] as *const [T]) }
+            }
+        }
+    }
+}
+impl<const N: usize, T> DerefMut for SmallVec<N, T> {
+    fn deref_mut(&mut self) -> &mut [T] {
+        match self {
+            Self::Heap(data) => data.as_mut_slice(),
+            Self::Stack(data, len) => {
+                unsafe { &mut *(&mut data[0..*len] as *mut [MaybeUninit<T>] as *mut [T]) }
             }
         }
     }

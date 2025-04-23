@@ -56,28 +56,46 @@ impl State {
         self
     }
 
+    fn guess_at_max_geodes(&self, blueprint: &Blueprint) -> i32 {
+        if self.minutes_left <= 1 { return self.geodes + self.geode_robots * self.minutes_left; }
+
+        // We can only get as many new (relevant) robots as there are minutes
+        // left (minus one)
+        let max_new_robots = self.minutes_left - 1;
+
+        // Adjust this based on whether or not the obsidian robots can keep up
+        // with the rate of production, only if the time left is low
+        // This is where the approximation becomes unsound, but it works for
+        // most inputs (including mine)
+        let max_obsidian_production = self.obsidian_robots + 1;
+        let adj_max_obsidian_production = max_obsidian_production + self.obsidian / self.minutes_left;
+        let obsidian_rate = blueprint.geode_robot_obsidian as i32 / adj_max_obsidian_production;
+        let max_new_robots = if self.minutes_left < 10 {
+            max_new_robots / obsidian_rate.max(1)
+        } else {
+            max_new_robots
+        };
+        // Something something triangular numbers-ish because of when the robots
+        // would come online
+        let max_new_output = (self.minutes_left - 1) * max_new_robots / 2;
+        // The theoretical maximum with the current & new geode robots
+        self.geodes + self.geode_robots * self.minutes_left + max_new_output
+    }
+
     pub fn recurse(self, blueprint: &Blueprint, memo: &mut HashMap<Self, i32>, best_seen_so_far: &mut i32) -> i32 {
         if self.minutes_left <= 1 {
             return self.geodes + self.geode_robots * self.minutes_left;
-        } else if let Some(best) = memo.get(&Self { geodes: 0, ..self }) {
-            return *best + self.geodes;
+        } else if let Some(best_number_of_new) = memo.get(&Self { geodes: 0, ..self }) {
+            return *best_number_of_new + self.geodes;
         }
 
-        // This approximation definitely isn't sound, but it works for my input :3
-        if self.minutes_left < 10 {
-            let guess_at_max = self.geodes + (self.geode_robots + 2) * (self.minutes_left + 2);
-            if guess_at_max < *best_seen_so_far {
-                return 0;
-            }
-        }
         let mut best = 0;
         for i in 0..4 {
-            if self.can_build_geode(blueprint) && i != 3 { continue }
             let new = match i {
-                0 => self.until_ore_built(blueprint),
-                1 => self.until_clay_built(blueprint),
-                2 => self.until_obsidian_built(blueprint),
-                3 => self.until_geode_built(blueprint),
+                0 => self.until_geode_built(blueprint),
+                1 => self.until_obsidian_built(blueprint),
+                2 => self.until_clay_built(blueprint),
+                3 => self.until_ore_built(blueprint),
                 _ => unreachable!("a"),
             };
             let new = if new.minutes_left <= 0 {
@@ -85,10 +103,14 @@ impl State {
             } else {
                 new.advanced()
             };
+            if new.guess_at_max_geodes(blueprint) < *best_seen_so_far { continue }
+
             best = best.max(new.recurse(blueprint, memo, best_seen_so_far));
         }
         *best_seen_so_far = best.max(*best_seen_so_far);
-        memo.insert(Self { geodes: 0, ..self }, best - self.geodes);
+
+        let best_number_of_new_geodes = best - self.geodes;
+        memo.insert(Self { geodes: 0, ..self }, best_number_of_new_geodes);
         best
     }
 
