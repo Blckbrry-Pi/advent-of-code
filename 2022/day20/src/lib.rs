@@ -1,7 +1,5 @@
 #![feature(new_range_api)]
 
-use std::range::Range;
-
 aoc_tools::aoc_sol!(day20 2022: part1, part2);
 
 pub fn part1(input: &str) -> i64 {

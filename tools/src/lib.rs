@@ -593,6 +593,17 @@ impl<const N: usize, T: Eq> Eq for SmallVec<N, T> {}
 
 impl<const N: usize, T: Hash> Hash for SmallVec<N, T> {
     fn hash<H: Hasher>(&self, state: &mut H) {
+        match self {
+            Self::Stack(data, len) => {
+                state.write_usize(*len);
+                for i in 0..*len {
+                    unsafe { data[i].assume_init_ref().hash(state); }
+                }
+            },
+            Self::Heap(data) => {
+                data.hash(state);
+            }
+        }
     }
 }
 
