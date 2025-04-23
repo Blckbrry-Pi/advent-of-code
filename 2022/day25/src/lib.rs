@@ -9,6 +9,8 @@ pub fn part1(input: &str) -> Number {
     Number(to_balanced_quinary(sum))
 }
 
+pub fn part2(input: &str) -> usize { input.len() }
+
 fn from_balanced_quinary(balanced: impl Iterator<Item = Digit>) -> i64 {
     let mut value = 0;
     for digit in balanced {

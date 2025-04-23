@@ -121,6 +121,9 @@ macro_rules! input_file {
 #[macro_export]
 macro_rules! multi_day_bench {
     ($multiday_name:ident: $($day:ident),+ $(,)?) => {
+        $crate::multi_day_bench! { $multiday_name: $($day ($day)),+ }
+    };
+    ($multiday_name:ident $($year:literal)?: $($day:ident ($module:ident)),+ $(,)?) => {
         mod $multiday_name {
             use criterion::{ criterion_group, Criterion };
             use std::hint::black_box;
@@ -128,17 +131,15 @@ macro_rules! multi_day_bench {
             const INPUT_COUNT: u64 = [$(stringify!($day),)+].len() as u64;
             #[allow(non_upper_case_globals)]
             mod inputs {
-                $(
-                    pub const $day: &str = include_str!(concat!("../../data/", stringify!($day), "/input.txt"));
-                )+
+                $crate::multi_day_bench! { @impl $($year)?; $($day),+ }
             }
 
             fn multiday_fn(c: &mut criterion::Criterion) {
                 let name = concat!("Multiday ", stringify!($multiday_name));
                 c.bench_function(name, |b| b.iter(|| {
                     $(
-                        ::$day::part1(black_box(inputs::$day));
-                        ::$day::part2(black_box(inputs::$day));
+                        ::$module::part1(black_box(inputs::$day));
+                        ::$module::part2(black_box(inputs::$day));
                     )+
                 }));
             }
@@ -149,6 +150,11 @@ macro_rules! multi_day_bench {
                 targets = multiday_fn
             }
         }
+    };
+    (@impl $($year:literal)?;) => {};
+    (@impl $($year:literal)?; $day:ident$(,)? $($rest:ident),*) => {
+        pub const $day: &str = include_str!(concat!("../../data/", $($year, "/",)? stringify!($day), "/input.txt"));
+        $crate::multi_day_bench! { @impl $($year)?; $($rest),* }
     };
 }
 
