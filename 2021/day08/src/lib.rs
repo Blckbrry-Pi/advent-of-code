@@ -29,113 +29,52 @@ impl Letter {
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
-struct Set {
-    a: bool,
-    b: bool,
-    c: bool,
-    d: bool,
-    e: bool,
-    f: bool,
-    g: bool,
-}
+struct Set(u8);
 
 macro_rules! number {
     ($($set_to_true:ident)*) => {
-        Set {
-            $($set_to_true: true,)*
-            ..Set::empty()
+        {
+            let mut output = Set(0);
+            $(output.add(Letter::$set_to_true);)*
+            output
         }
     };
 }
 impl Set {
     pub const NUMBERS: [Self; 10] = [
-        number!(a b c e f g),
-        number!(c f),
-        number!(a c d e g),
-        number!(a c d f g),
-        number!(b c d f),
-        number!(a b d f g),
-        number!(a b d e f g),
-        number!(a c f),
-        number!(a b c d e f g),
-        number!(a b c d f g),
+        number!(A B C E F G),
+        number!(C F),
+        number!(A C D E G),
+        number!(A C D F G),
+        number!(B C D F),
+        number!(A B D F G),
+        number!(A B D E F G),
+        number!(A C F),
+        number!(A B C D E F G),
+        number!(A B C D F G),
     ];
 
     pub const fn empty() -> Self {
-        Self {
-            a: false,
-            b: false,
-            c: false,
-            d: false,
-            e: false,
-            f: false,
-            g: false,
-        }
+        Self(0)
     }
     pub const fn intersect(&self, other: &Self) -> Self {
-        Self {
-            a: self.a && other.a,
-            b: self.b && other.b,
-            c: self.c && other.c,
-            d: self.d && other.d,
-            e: self.e && other.e,
-            f: self.f && other.f,
-            g: self.g && other.g,
-        }
+        Self(self.0 & other.0)
     }
     pub const fn union(&self, other: &Self) -> Self {
-        Self {
-            a: self.a || other.a,
-            b: self.b || other.b,
-            c: self.c || other.c,
-            d: self.d || other.d,
-            e: self.e || other.e,
-            f: self.f || other.f,
-            g: self.g || other.g,
-        }
+        Self(self.0 | other.0)
     }
     pub const fn complement(&self) -> Self {
-        Self {
-            a: !self.a,
-            b: !self.b,
-            c: !self.c,
-            d: !self.d,
-            e: !self.e,
-            f: !self.f,
-            g: !self.g,
-        }
+        Self(!self.0)
     }
 
     pub const fn count(&self) -> u8 {
-        self.a as u8 +
-        self.b as u8 +
-        self.c as u8 +
-        self.d as u8 +
-        self.e as u8 +
-        self.f as u8 +
-        self.g as u8
+        self.0.count_ones() as u8
     }
     pub const fn has(&self, letter: Letter) -> bool {
-        match letter {
-            Letter::A => self.a,
-            Letter::B => self.b,
-            Letter::C => self.c,
-            Letter::D => self.d,
-            Letter::E => self.e,
-            Letter::F => self.f,
-            Letter::G => self.g,
-        }
+        (self.0 >> letter as u32) & 1 != 0
     }
     pub const fn add(&mut self, letter: Letter) {
-        match letter {
-            Letter::A => self.a = true,
-            Letter::B => self.b = true,
-            Letter::C => self.c = true,
-            Letter::D => self.d = true,
-            Letter::E => self.e = true,
-            Letter::F => self.f = true,
-            Letter::G => self.g = true,
-        }
+        self.0 |= 1 << letter as u32;
     }
     pub fn first(self) -> Option<Letter> {
         self.into_iter().next()
@@ -159,14 +98,15 @@ impl FromStr for Set {
 }
 impl Debug for Set {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        use Letter::*;
         let mut set = f.debug_set();
-        if self.a { set.entry(&"a"); }
-        if self.b { set.entry(&"b"); }
-        if self.c { set.entry(&"c"); }
-        if self.d { set.entry(&"d"); }
-        if self.e { set.entry(&"e"); }
-        if self.f { set.entry(&"f"); }
-        if self.g { set.entry(&"g"); }
+        if self.has(A) { set.entry(&"a"); }
+        if self.has(B) { set.entry(&"b"); }
+        if self.has(C) { set.entry(&"c"); }
+        if self.has(D) { set.entry(&"d"); }
+        if self.has(E) { set.entry(&"e"); }
+        if self.has(F) { set.entry(&"f"); }
+        if self.has(G) { set.entry(&"g"); }
         set.finish()
     }
 }
