@@ -8,7 +8,7 @@ arena = ["ferroc"]
 
 [dependencies]
 ferroc = { version = "^1.0.0-pre.3", git = "https://github.com/js2xxx/ferroc.git", optional = true }
-reqwest = { version = "0.12", features = ["blocking"] }
+reqwest = { version = "0.12.15", features = ["blocking"] }
 
 [dependencies.xxhash-rust]
 version = "0.8.5"
