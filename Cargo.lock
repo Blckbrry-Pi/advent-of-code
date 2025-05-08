@@ -710,6 +710,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "day13-2021"
+version = "0.1.0"
+dependencies = [
+ "aoc_tools",
+]
+
+[[package]]
 name = "day13-2024"
 version = "0.1.0"
 dependencies = [
@@ -717,7 +724,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "day14-2021"
+version = "0.1.0"
+dependencies = [
+ "aoc_tools",
+]
+
+[[package]]
 name = "day14-2024"
+version = "0.1.0"
+dependencies = [
+ "aoc_tools",
+]
+
+[[package]]
+name = "day15-2021"
 version = "0.1.0"
 dependencies = [
  "aoc_tools",
