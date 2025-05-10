@@ -836,6 +836,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "day20-2021"
+version = "0.1.0"
+dependencies = [
+ "aoc_tools",
+]
+
+[[package]]
 name = "day20-2022"
 version = "0.1.0"
 dependencies = [
@@ -854,6 +861,13 @@ name = "day21-2019"
 version = "0.1.0"
 dependencies = [
  "intcode-2019",
+]
+
+[[package]]
+name = "day21-2021"
+version = "0.1.0"
+dependencies = [
+ "aoc_tools",
 ]
 
 [[package]]
