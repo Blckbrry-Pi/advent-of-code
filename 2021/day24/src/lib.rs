@@ -1,96 +1,194 @@
-#![feature(box_patterns)]
-
-use std::{rc::Rc, str::FromStr, sync::RwLock};
+use std::{cell::LazyCell, hash::Hash, str::FromStr, sync::{atomic::AtomicBool, Arc}};
 aoc_tools::aoc_sol!(day24 2021: part1, part2);
+aoc_tools::fast_hash!();
+aoc_tools::arena!();
 
-type BoxType<T> = Rc<T>;
+type Scalar = i32;
+type BoxType<T> = Arc<T>;
 
 #[derive(Clone)]
-struct ReductionReplacements(Vec<i64>);
+struct ReductionReplacements(Vec<Scalar>);
 
-#[derive(Clone)]
-struct Range(Rc<RwLock<Option<Rc<HashSet<i64>>>>>);
+#[derive(Debug, Clone, PartialEq)]
+struct Range(Option<Arc<HashSet<Scalar>>>);
 impl Range {
     pub fn empty() -> Self {
-        Self(Rc::new(RwLock::new(None)))
+        Self(None)
     }
-    pub fn from(range: HashSet<i64>) -> Self {
-        Self(Rc::new(RwLock::new(Some(Rc::new(range)))))
+    pub fn from(range: HashSet<Scalar>) -> Self {
+        Self(Some(Arc::new(range)))
     }
-    pub fn get_only(&self) -> Option<i64> {
-        let guard = self.0.read().unwrap();
-        guard.as_ref().and_then(|map| if map.len() == 1 {
-            map.iter().next().copied()
+    pub fn get_only(&self) -> Option<Scalar> {
+        let Some(set) = &self.0 else { return None };
+        if set.len() == 1 {
+            set.iter().next().copied()
         } else {
             None
-        })
+        }
     }
-    pub fn combine(a: &HashSet<i64>, b: &HashSet<i64>, combiner: impl Fn(i64, i64) -> i64) -> HashSet<i64> {
-        let combiner_ref = &combiner;
-        a.iter()
-            .copied()
-            .flat_map(
-                |a_val| b.iter()
-                    .copied()
-                    .map(move |b_val| combiner_ref(a_val, b_val))
-            )
-            .collect()
+    fn combine(a: &Range, b: &Range, combiner_fn: impl Fn(Scalar, Scalar) -> Scalar) -> Range {
+        let a = a.0.as_ref().unwrap();
+        let b = b.0.as_ref().unwrap();
+        let capacity = a.len() * b.len().isqrt();
+        let mut output = HashSet::with_capacity(capacity);
+        for &a_val in a.as_ref() {
+            for &b_val in b.as_ref() {
+                output.insert(combiner_fn(a_val, b_val));
+            }
+        }
+        Self::from(output)
     }
-    pub fn get<'a>(&'a self) -> Option<Rc<HashSet<i64>>> {
-        let guard = self.0.read().unwrap();
-        guard.clone()
+    fn is_some(&self) -> bool {
+        self.0.is_some()
+    }
+    fn len(&self) -> usize {
+        self.0
+            .as_ref()
+            .expect("Can't get the size of an empty range")
+            .len()
+    }
+    fn is_disjoint(&self, other: &Self) -> bool {
+        let a = self.0.as_ref().expect("Can't compare empty ranges");
+        let b = other.0.as_ref().expect("Can't compare empty ranges");
+        a.is_disjoint(b)
+    }
+
+    fn eq_range(&self, other: &Self) -> Range {
+        let can_be_eq = !self.is_disjoint(other);
+        let can_be_neq = self.len() > 1 || other.len() > 1 || !can_be_eq;
+        match (can_be_eq, can_be_neq) {
+            (true, true) => Self::zero_one(),
+            (true, false) => Self::one(),
+            (false, true) => Self::zero(),
+            (false, false) => panic!("Something went wrong: {self:?} {other:?}"),
+        }
+    }
+    fn neq_range(&self, other: &Self) -> Range {
+        let range = self.eq_range(other);
+        if range == Self::one() {
+            Self::zero()
+        } else if range == Self::zero() {
+            Self::one()
+        } else {
+            Self::zero_one()
+        }
+    }
+    fn contains(&self, value: Scalar) -> bool {
+        let range = self.0.as_ref().expect("Can't check for value in an empty range");
+        range.contains(&value)
+    }
+    fn literal(l: Scalar) -> Self {
+        match l {
+            0 => Self::zero(),
+            1 => Self::one(),
+            26 => Self::l26(),
+            n => Self::from([n].into_iter().collect()),
+        }
     }
 }
+
+macro_rules! memoized_common_range {
+    ($name:ident => $contents:expr) => {
+        impl Range {
+            fn $name() -> Self {
+                thread_local! {
+                    static MEMOIZED_RANGE: LazyCell<Range> = LazyCell::new(|| {
+                        Range(Some(Arc::new($contents)))
+                    });
+                }
+                MEMOIZED_RANGE.with(|v| (**v).clone())
+            }
+        }
+    };
+}
+memoized_common_range!(input => (1..=9).into_iter().collect());
+memoized_common_range!(zero => [0].into_iter().collect());
+memoized_common_range!(one => [1].into_iter().collect());
+memoized_common_range!(zero_one => [0, 1].into_iter().collect());
+memoized_common_range!(l26 => [26].into_iter().collect());
 
 #[derive(Clone)]
 enum Computed {
-    Binary(BoxType<BinaryOp>, Range),
-    Literal(i64),
+    Binary(u64, BoxType<BinaryOp>, Range),
+    Literal(Scalar),
     Input(u8),
 }
 impl Computed {
-    fn reduce(self: Self) -> (Self, bool) {
-        let Self::Binary(binary_op, range) = self else { return (self, false) };
-        if range.get().is_some() { return (Self::Binary(binary_op, range), false); }
-        let (reduced, was_reduced) = binary_op.reduce();
-        let Self::Binary(_, range) = &reduced else { return (reduced, was_reduced) };
-        if let Some(l) = range.get_only() {
-            (Self::Literal(l), true)
-        } else {
-            (reduced, was_reduced)
+    fn reduce(mut self, rewrites: &mut HashMap<Computed, Computed>, distribute: bool) -> (Self, bool) {
+        let mut was_reduced = false;
+        loop {
+            if let Some(rewrite) = rewrites.get(&self) {
+                self = rewrite.clone();
+                was_reduced = true;
+                continue;
+            }
+            let Self::Binary(id, binary_op, range) = self else {
+                return (self, was_reduced);
+            };
+            if range.is_some() {
+                return (Self::Binary(id, binary_op, range), was_reduced);
+            }
+    
+            let (reduced, was_reduced_again) = binary_op.clone().reduce(rewrites, distribute);
+            self = Self::Binary(id, binary_op, range);
+            was_reduced |= was_reduced_again;
+            if was_reduced_again {
+                rewrites.insert(self, reduced.clone());
+            }
+            let Self::Binary(_, _, range) = &reduced else {
+                return (reduced, was_reduced)
+            };
+            self = if let Some(l) = range.get_only() {
+                return (Self::Literal(l), true)
+            } else if !was_reduced_again || distribute {
+                return (reduced, was_reduced)
+            } else {
+                reduced
+            };
         }
     }
-    fn reduce_2(l: Self, r: Self) -> (Self, Self, bool) {
-        let (l, l_reduced) = if !l.has_range() { l.reduce() } else { (l, false) };
-        let (r, r_reduced) = if !r.has_range() { r.reduce() } else { (r, false) };
+    fn reduce_2(l: Self, r: Self, rewrites: &mut HashMap<Computed, Computed>, distribute: bool) -> (Self, Self, bool) {
+        let (l, l_reduced) = if !l.has_range() { l.reduce(rewrites, distribute) } else { (l, false) };
+        let (r, r_reduced) = if !r.has_range() && (!distribute || !l_reduced) { r.reduce(rewrites, distribute) } else { (r, false) };
         (l, r, l_reduced || r_reduced)
     }
-    fn reduce_full(mut self) -> Self {
+    fn reduce_full(mut self, distribute: bool) -> Self {
+        let mut rewrites = HashMap::new();
+        let mut do_distribute = distribute;
         loop {
-            let (new, reduced) = self.reduce();
-            if !reduced { return new }
+            let (new, reduced) = self.reduce(&mut rewrites, do_distribute);
+            if reduced {
+                do_distribute = false;
+                
+                // println!("{}", id_map.len());
+            } else if do_distribute || !distribute {
+                return new;
+            } else {
+                do_distribute = true;
+                // println!("Distributing");
+            }
             self = new;
         }
     }
-    fn range(&self) -> Rc<HashSet<i64>> {
+    fn range(&self) -> Range {
         match self {
-            Self::Input(_) => (1..=9).collect::<HashSet<_>>().into(),
-            Self::Literal(l) => [*l].into_iter().collect::<HashSet<_>>().into(),
-            Self::Binary(_, range) => range.get().unwrap(),
+            Self::Input(_) => Range::input(),
+            &Self::Literal(l) => Range::literal(l),
+            Self::Binary(_, _, range) => range.clone(),
         }
     }
     fn has_range(&self) -> bool {
         match self {
-            Self::Binary(_, range) => range.get().is_some(),
+            Self::Binary(_, _, range) => range.is_some(),
             _ => true,
         }
     }
     fn clone_unfrozen(&self, replacements: &ReductionReplacements) -> (Self, bool) {
         match self {
-            Self::Binary(op, _) => {
+            Self::Binary(id, op, _) => {
                 let (unfrozen_op, needed_unfreezing) = op.clone_unfrozen(replacements);
                 if needed_unfreezing {
-                    (Self::Binary(BoxType::new(unfrozen_op), Range::empty()), true)
+                    (Self::Binary(*id, BoxType::new(unfrozen_op), Range::empty()), true)
                 } else {
                     (self.clone(), false)
                 }
@@ -99,28 +197,59 @@ impl Computed {
             _ => (self.clone(), false),
         }
     }
+    fn clone_with_replacements(&self, replacements: &ReductionReplacements) -> Self {
+        self.clone_unfrozen(replacements).0
+    }
 }
 impl Debug for Computed {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Input(n) => write!(f, "<inp {n:2}>"),
             Self::Literal(l) => write!(f, "{l}"),
-            Self::Binary(b, _) => write!(f, "{b:?}"),
+            Self::Binary(_, b, _) => write!(f, "{b:.*?}", f.precision().unwrap_or(0).saturating_sub(1)),
         }
     }
 }
-// impl Hash for Computed {
-//     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-//         match self {
-//             Self::Binary(b) => {
-//                 state.write_i8(0);
-//                 b.as_ref().hash()
-//             }
-//         }
-//     }
-// }
+impl PartialEq for Computed {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (
+                Self::Binary(_, a, _),
+                Self::Binary(_, b, _),
+            ) => a == b,
+            (
+                Self::Input(a),
+                Self::Input(b),
+            ) => a == b,
+            (
+                Self::Literal(a),
+                Self::Literal(b),
+            ) => a == b,
+            _ => false,
+        }
+    }
+}
+impl Eq for Computed {}
+impl Hash for Computed {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        match self {
+            Self::Binary(prehashed, _, _) => {
+                state.write_i8(0);
+                state.write_u64(*prehashed)
+            },
+            Self::Input(idx) => {
+                state.write_i8(1);
+                state.write_u8(*idx);
+            },
+            Self::Literal(l) => {
+                state.write_i8(2);
+                (*l).hash(state);
+            },
+        }
+    }
+}
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Hash)]
 enum BinaryOp {
     Add(Computed, Computed),
     Mul(Computed, Computed),
@@ -130,40 +259,28 @@ enum BinaryOp {
     Neq(Computed, Computed),
 }
 impl BinaryOp {
-    fn sub_reduce(self: BoxType<Self>) -> (BoxType<Self>, bool) {
-        match self.as_ref() {
-            Self::Add(l, r) => {
-                let (new_l, new_r, reduced) = Computed::reduce_2(l.clone(), r.clone());
-                (BoxType::new(Self::Add(new_l, new_r)), reduced)
-            },
-            Self::Mul(l, r) => {
-                let (new_l, new_r, reduced) = Computed::reduce_2(l.clone(), r.clone());
-                (BoxType::new(Self::Mul(new_l, new_r)), reduced)
-            },
-            Self::Div(l, r) => {
-                let (new_l, new_r, reduced) = Computed::reduce_2(l.clone(), r.clone());
-                (BoxType::new(Self::Div(new_l, new_r)), reduced)
-            },
-            Self::Mod(l, r) => {
-                let (new_l, new_r, reduced) = Computed::reduce_2(l.clone(), r.clone());
-                (BoxType::new(Self::Mod(new_l, new_r)), reduced)
-            },
-            Self::Eql(l, r) => {
-                let (new_l, new_r, reduced) = Computed::reduce_2(l.clone(), r.clone());
-                (BoxType::new(Self::Eql(new_l, new_r)), reduced)
-            },
-            Self::Neq(l, r) => {
-                let (new_l, new_r, reduced) = Computed::reduce_2(l.clone(), r.clone());
-                (BoxType::new(Self::Neq(new_l, new_r)), reduced)
-            },
+    // #[inline(always)]
+    fn sub_reduce(self: BoxType<Self>, rewrites: &mut HashMap<Computed, Computed>, distribute: bool) -> (BoxType<Self>, bool) {
+        macro_rules! sub_reduce_binary {
+            ($($variant:ident),+ $(,)?) => {
+                match self.as_ref() {
+                    $(
+                        Self::$variant(l, r) => {
+                            let (new_l, new_r, reduced) = Computed::reduce_2(l.clone(), r.clone(), rewrites, distribute);
+                            (BoxType::new(Self::$variant(new_l, new_r)), reduced)
+                        },
+                    )+
+                }
+            };
         }
+        sub_reduce_binary!(Add, Mul, Div, Mod, Eql, Neq)
     }
     fn computed(self) -> Computed {
-        Computed::Binary(BoxType::new(self), Range::empty())
+        Computed::Binary(self.simple_hash(), BoxType::new(self), Range::empty())
     }
     fn computed_reduced(self) -> Computed {
         let range = self.range();
-        Computed::Binary(BoxType::new(self), Range::from(range))
+        Computed::Binary(self.simple_hash(), BoxType::new(self), range)
     }
     fn computed_maybe(self, is_reduced: bool) -> Computed {
         if is_reduced {
@@ -172,49 +289,51 @@ impl BinaryOp {
             self.computed()
         }
     }
-    fn range(&self) -> HashSet<i64> {
+    fn range(&self) -> Range {
         match self {
             Self::Add(l, r) => Range::combine(&l.range(), &r.range(), |l, r| l + r),
             Self::Mul(l, r) => Range::combine(&l.range(), &r.range(), |l, r| l * r),
-            Self::Div(l, r) => Range::combine(&l.range(), &r.range(), |l, r| (l as f64 / r as f64).trunc() as i64),
-            Self::Mod(l, r) => Range::combine(&l.range(), &r.range(), |l, r| l - (l as f64 / r as f64).trunc() as i64 * r),
-            v @ (Self::Eql(l, r) | Self::Neq(l, r)) => {
-                let is_neq = matches!(v, Self::Neq(..));
-                let l_range = l.range();
-                let r_range = r.range();
-                let mut output_range = HashSet::new();
-                if !l_range.is_disjoint(&r_range) || l_range.is_empty() || r_range.is_empty() {
-                    output_range.insert(if is_neq { 0 } else { 1 });
-                }
-                if l_range.len() > 1 || r_range.len() > 1 || l_range.is_empty() || r_range.is_empty() {
-                    output_range.insert(if is_neq { 1 } else { 0 });
-                }
-                output_range
-            },
+            Self::Div(l, r) => Range::combine(&l.range(), &r.range(), |l, r| (l as f64 / r as f64).trunc() as Scalar),
+            Self::Mod(l, r) => Range::combine(&l.range(), &r.range(), |l, r| l - (l as f64 / r as f64).trunc() as Scalar * r),
+            Self::Eql(l, r) => l.range().eq_range(&r.range()),
+            Self::Neq(l, r) => l.range().neq_range(&r.range()),
         }
     }
     fn clone_unfrozen(&self, replacements: &ReductionReplacements) -> (Self, bool) {
-        fn collate(
-            l: (Computed, bool),
-            r: (Computed, bool),
-            combiner: impl Fn(Computed, Computed) -> BinaryOp,
-        ) -> (BinaryOp, bool) {
-            (combiner(l.0, r.0), l.1 || r.1)
+        macro_rules! collate {
+            ($l:ident, $r:ident, $combiner:expr) => {
+                {
+                    let l = $l.clone_unfrozen(replacements);
+                    let r = $r.clone_unfrozen(replacements);
+                    (($combiner)(l.0, r.0), l.1 || r.1)
+                }
+            };
         }
         match self {
-            Self::Add(l, r) => collate(l.clone_unfrozen(replacements), r.clone_unfrozen(replacements), Self::Add),
-            Self::Mul(l, r) => collate(l.clone_unfrozen(replacements), r.clone_unfrozen(replacements), Self::Mul),
-            Self::Div(l, r) => collate(l.clone_unfrozen(replacements), r.clone_unfrozen(replacements), Self::Div),
-            Self::Mod(l, r) => collate(l.clone_unfrozen(replacements), r.clone_unfrozen(replacements), Self::Mod),
-            Self::Eql(l, r) => collate(l.clone_unfrozen(replacements), r.clone_unfrozen(replacements), Self::Eql),
-            Self::Neq(l, r) => collate(l.clone_unfrozen(replacements), r.clone_unfrozen(replacements), Self::Neq),
+            Self::Add(l, r) => collate!(l, r, Self::Add),
+            Self::Mul(l, r) => collate!(l, r, Self::Mul),
+            Self::Div(l, r) => collate!(l, r, Self::Div),
+            Self::Mod(l, r) => collate!(l, r, Self::Mod),
+            Self::Eql(l, r) => collate!(l, r, Self::Eql),
+            Self::Neq(l, r) => collate!(l, r, Self::Neq),
         }
     }
-    fn reduce(mut self: BoxType<Self>) -> (Computed, bool) {
+    // #[inline(always)]
+    fn reduce(mut self: BoxType<Self>, rewrites: &mut HashMap<Computed, Computed>, distribute: bool) -> (Computed, bool) {
         use Computed::*;
         use BinaryOp::*;
-        let (sub_reduced, sub_reduction_happened) = self.sub_reduce();
-        self = sub_reduced;
+        let mut sub_reduction_happened = false;
+        loop {
+            let (sub_reduced, new_sub_reduction_happened) = self.sub_reduce(rewrites, distribute);
+            self = sub_reduced;
+            if new_sub_reduction_happened {
+                sub_reduction_happened = true;
+                if distribute { break }
+            } else {
+                break
+            }
+        }
+        if sub_reduction_happened && distribute { return (Binary(self.simple_hash(), self, Range::empty()), true) }
         let (output, base_reducuction_happened) = match self.as_ref() {
             // Add zero
             Add(Literal(0), w) | Add(w, Literal(0)) => (
@@ -232,7 +351,7 @@ impl BinaryOp {
                 true,
             ),
             // Right-fold additions
-            Add(Binary(l, _), r) if matches!(l.as_ref(), Add(_, _)) => {
+            Add(Binary(_, l, _), r) if matches!(l.as_ref(), Add(_, _)) => {
                 let Add(l_l, l_r) = l.as_ref() else { unreachable!() };
                 (
                     Add(
@@ -261,13 +380,12 @@ impl BinaryOp {
                 true,
             ),
             // Shunt literals to the right
-            // Mul(l @ Literal(_), r) => (
             Mul(l @ Literal(_), r) => (
                 Mul(r.clone(), l.clone()).computed(),
                 true,
             ),
             // Right-fold multiplies
-            Mul(Binary(l, _), r) if matches!(l.as_ref(), Mul(_, _)) => {
+            Mul(Binary(_, l, _), r) if matches!(l.as_ref(), Mul(_, _)) => {
                 let Mul(l_l, l_r) = l.as_ref() else { unreachable!() };
                 (
                     Mul(
@@ -279,20 +397,21 @@ impl BinaryOp {
                     ).computed(),
                     true,
                 )
-            }
+            },
             // Distribute
-            // | Mul(Binary(add, _), coeff)
-            // | Mul(coeff, Binary(add, _))
-            // if matches!(add.as_ref(), Add(_, _)) => {
-            //     let Add(add_l, add_r) = add.as_ref() else { unreachable!() };
-            //     (
-            //         Add(
-            //             Mul(add_l.clone(), coeff.clone()).computed(),
-            //             Mul(add_r.clone(), coeff.clone()).computed(),
-            //         ).computed(),
-            //         true,
-            //     )
-            // },
+            | Mul(Binary(_, add, _), coeff)
+            | Mul(coeff, Binary(_, add, _))
+            if distribute && matches!(add.as_ref(), Add(_, _)) => {
+                // println!("a");
+                let Add(add_l, add_r) = add.as_ref() else { unreachable!() };
+                (
+                    Add(
+                        Mul(add_l.clone(), coeff.clone()).computed(),
+                        Mul(add_r.clone(), coeff.clone()).computed(),
+                    ).computed(),
+                    true,
+                )
+            },
 
             // 0 divided by anything is 0
             Div(Literal(0), _) => (
@@ -305,81 +424,39 @@ impl BinaryOp {
                 true,
             ),
             Div(Literal(l), Literal(r)) => (
-                Literal((*l as f64 / *r as f64).trunc() as i64),
+                Literal((*l as f64 / *r as f64).trunc() as Scalar),
                 true,
             ),
             // Remove immediately nested divisions
-            Div(Binary(l, _), r) if matches!(l.as_ref(), Div(_, _)) => {
-                let Div(l_l, l_r) = l.as_ref() else { unreachable!() };
-                (
-                    Div(
-                        l_l.clone(),
-                        Mul(l_r.clone(), r.clone()).computed(),
-                    ).computed(),
-                    true,
-                )
-            },
-            Div(l, Binary(r, _)) if matches!(r.as_ref(), Div(_, _)) => {
-                let Div(r_l, r_r) = r.as_ref() else { unreachable!() };
-                (
-                    Div(
-                        Mul(l.clone(), r_r.clone()).computed(),
-                        r_l.clone(),
-                    ).computed(),
-                    true,
-                )
-            },
+            // Div(Binary(_, l, _), r) if matches!(l.as_ref(), Div(_, _)) => {
+            //     let Div(l_l, l_r) = l.as_ref() else { unreachable!() };
+            //     (
+            //         Div(
+            //             l_l.clone(),
+            //             Mul(l_r.clone(), r.clone()).computed(),
+            //         ).computed(),
+            //         true,
+            //     )
+            // },
+            // Div(l, Binary(_, r, _)) if matches!(r.as_ref(), Div(_, _)) => {
+            //     let Div(r_l, r_r) = r.as_ref() else { unreachable!() };
+            //     (
+            //         Div(
+            //             Mul(l.clone(), r_r.clone()).computed(),
+            //             r_l.clone(),
+            //         ).computed(),
+            //         true,
+            //     )
+            // },
 
             Mod(_, Literal(1)) => (
                 Literal(0),
                 true,
             ),
             Mod(Literal(l), Literal(r)) => (
-                Literal(l - (*l as f64 / *r as f64).trunc() as i64 * r),
+                Literal(l - (*l as f64 / *r as f64).trunc() as Scalar * r),
                 true,
             ),
-            // Mod(Binary(mod_l, _), Literal(r)) if matches!(mod_l.as_ref(), Mod(_, Literal(_))) => {
-            //     let Mod(l_l, Literal(l_r)) = mod_l.as_ref() else { unreachable!() };
-            //     let (l_r, r) = (*l_r, *r);
-            //     if l_r % r == 0 || r % l_r == 0 {
-            //         (
-            //             Mod(l_l.clone(), Literal(l_r.min(r))).computed(),
-            //             true,
-            //         )
-            //     } else {
-            //         // (
-            //         //     Mod(
-            //         //         Mod(l_l.clone(), Literal(l_r)).computed(),
-            //         //         Literal(r),
-            //         //     ).computed_reduced(),
-            //         //     false,
-            //         // )
-            //         panic!("a");
-            //     }
-            // },
-            // Mod(Binary(binop, range), Literal(r_val)) if range.get().is_some() => {
-            //     if range.get().unwrap().iter().all(|v| (0..*r_val).contains(v)) {
-            //         (Binary(binop.clone(), range.clone()), true)
-            //     } else {
-            //         ((*self).clone().computed_maybe(!sub_reduction_happened), false)
-            //     }
-            // }
-            // Mod(Binary(box Mod(l_l, Literal(l_r)), _), Literal(r)) => {
-            //     if l_r % r == 0 || r % l_r == 0 {
-            //         (
-            //             Mod(l_l, Literal(l_r.min(r))).computed(),
-            //             true,
-            //         )
-            //     } else {
-            //         (
-            //             Mod(
-            //                 Mod(l_l, Literal(l_r)).computed(),
-            //                 Literal(r),
-            //             ).computed_reduced(),
-            //             false,
-            //         )
-            //     }
-            // },
 
 
             // Reducing literal eql literal
@@ -388,13 +465,24 @@ impl BinaryOp {
                 true,
             ),
 
+            // Converting equality into "subtractions"
+            Eql(l, r) if !matches!(r, Literal(0)) => (
+                Eql(
+                    Add(l.clone(), Mul(r.clone(), Literal(-1)).computed()).computed(),
+                    Literal(0),
+                ).computed(),
+                true,
+            ),
+
             // Reducing neq
-            | Eql(Binary(cmp, _), Literal(0))
-            | Eql(Literal(0), Binary(cmp, _))
+            | Eql(Binary(_, cmp, _), Literal(0))
+            | Eql(Literal(0), Binary(_, cmp, _))
             if matches!(cmp.as_ref(), Eql(..)) => {
                 let Eql(cmp_l, cmp_r) = cmp.as_ref() else { unreachable!() };
                 (Neq(cmp_l.clone(), cmp_r.clone()).computed(), true)
             },
+
+
 
             // Sub-Reductions
             // c @ Self::Add(_, _) => (c.computed_reduced(), false),
@@ -406,23 +494,52 @@ impl BinaryOp {
         };
         let reduction_happened = base_reducuction_happened || sub_reduction_happened;
         (output, reduction_happened)
-        // if reduction_happened {
-        // } else {
-        //     return (output, false);
-        // }
+    }
+    pub fn simple_hash(&self) -> u64 {
+        use std::hash::{ Hasher, BuildHasher };
+        let mut hasher = NoRandomState::default().build_hasher();
+        self.hash(&mut hasher);
+        hasher.finish()
     }
 }
 impl Debug for BinaryOp {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            // Self::Input(n) => write!(f, "<inp {n:2}>"),
-            // Self::Literal(l) => write!(f, "{l}"),
-            Self::Add(a, b) => write!(f, "({a:?} + {b:?})"),
-            Self::Mul(a, b) => write!(f, "({a:?} * {b:?})"),
-            Self::Div(a, b) => write!(f, "({a:?} / {b:?})"),
-            Self::Mod(a, b) => write!(f, "({a:?} % {b:?})"),
-            Self::Eql(a, b) => write!(f, "({a:?} == {b:?})"),
-            Self::Neq(a, b) => write!(f, "({a:?} != {b:?})"),
+        let multiline_recurse = f.precision().unwrap_or(0);
+        let (a, b) = match self {
+            | Self::Add(a, b)
+            | Self::Mul(a, b)
+            | Self::Div(a, b)
+            | Self::Mod(a, b)
+            | Self::Eql(a, b)
+            | Self::Neq(a, b) => (a, b),
+        };
+        if multiline_recurse > 0 && matches!(a, Computed::Binary(..)) && matches!(b, Computed::Binary(..)) {
+            writeln!(f, "(")?;
+            for line in format!("{a:.*?}", multiline_recurse).lines() {
+                writeln!(f, "    {line}")?;
+            }
+            write!(f, "    ")?;
+            match self {
+                Self::Add(..) => writeln!(f, "+"),
+                Self::Mul(..) => writeln!(f, "*"),
+                Self::Div(..) => writeln!(f, "/"),
+                Self::Mod(..) => writeln!(f, "%"),
+                Self::Eql(..) => writeln!(f, "=="),
+                Self::Neq(..) => writeln!(f, "!="),
+            }?;
+            for line in format!("{b:.*?}", multiline_recurse).lines() {
+                writeln!(f, "    {line}")?;
+            }
+            write!(f, ")")
+        } else {
+            match self {
+                Self::Add(a, b) => write!(f, "({a:.*?} + {b:.*?})", multiline_recurse, multiline_recurse),
+                Self::Mul(a, b) => write!(f, "({a:.*?} * {b:.*?})", multiline_recurse, multiline_recurse),
+                Self::Div(a, b) => write!(f, "({a:.*?} / {b:.*?})", multiline_recurse, multiline_recurse),
+                Self::Mod(a, b) => write!(f, "({a:.*?} % {b:.*?})", multiline_recurse, multiline_recurse),
+                Self::Eql(a, b) => write!(f, "({a:.*?} == {b:.*?})", multiline_recurse, multiline_recurse),
+                Self::Neq(a, b) => write!(f, "({a:.*?} != {b:.*?})", multiline_recurse, multiline_recurse),
+            }
         }
     }
 }
@@ -447,14 +564,14 @@ impl FromStr for Reg {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum Op { Reg(Reg), Literal(i64) }
+enum Op { Reg(Reg), Literal(Scalar) }
 impl FromStr for Op {
     type Err = String;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let res = if s.as_bytes()[0].is_ascii_alphabetic() {
             Self::Reg(Reg::from_str(s)?)
         } else {
-            Self::Literal(i64::from_str(s).map_err(|e| e.to_string())?)
+            Self::Literal(Scalar::from_str(s).map_err(|e| e.to_string())?)
         };
         Ok(res)
     }
@@ -581,10 +698,10 @@ impl State {
         }
     }
     pub fn reduce(&mut self) {
-        self.w = self.w.clone().reduce_full();
-        self.x = self.x.clone().reduce_full();
-        self.y = self.y.clone().reduce_full();
-        self.z = self.z.clone().reduce_full();
+        self.w = self.w.clone().reduce_full(false);
+        self.x = self.x.clone().reduce_full(false);
+        self.y = self.y.clone().reduce_full(false);
+        self.z = self.z.clone().reduce_full(false);
     }
     pub fn init() -> Self {
         Self {
@@ -601,35 +718,67 @@ fn input_replacements(
     base: &Computed,
     input_num: u8,
     replacements: &mut ReductionReplacements,
-    guesses: &(impl Iterator<Item = i64> + Clone),
-) -> Option<Vec<i64>> {
+    guesses: impl Iterator<Item = Scalar> + Clone + Send,
+    stop: Arc<AtomicBool>,
+) -> Option<Vec<Scalar>> {
         if input_num == 14 { return Some(Vec::with_capacity(14)); }
+        let mut thread_fns = vec![];
         for guess in guesses.clone() {
-            // println!("Testing inp {input_num} = {guess}");
-            // let mut test_replacements = replacements.clone();
+            let mut replacements = ReductionReplacements(replacements.0.clone());
             replacements.0.push(guess);
-            let test_base = base.clone_unfrozen(&replacements).0.reduce_full();
-            // println!("{:?}", z.range());
-            if test_base.range().contains(&0) {
-                for &n in replacements.0.iter() {
-                    print!("{n} ");
+            let guesses = guesses.clone();
+            let stop = stop.clone();
+            let thread_fn = move || {
+                let test_base = base.clone_with_replacements(&replacements).reduce_full(input_num <= 1);
+                if test_base.range().contains(0) {
+                    use std::io::Write;
+                    print!("\x1b[0K\r");
+                    for n in replacements.0.iter().copied().chain([guesses.clone().next().unwrap(); 14]).take(14) {
+                        print!("{n}");
+                    }
+                    std::io::stdout().flush().unwrap();
+
+                    if let Some(mut output) = input_replacements(
+                        &test_base,
+                        input_num+1,
+                        &mut replacements,
+                        guesses,
+                        stop,
+                    ) {
+                        output.push(guess);
+                        return Some(output)
+                    }
                 }
-                println!();
-                // println!("Input {input_num:2} ?= {guess}");
-                if let Some(mut output) = input_replacements(
-                    &test_base,
-                    input_num+1,
-                    replacements,
-                    guesses,
-                ) {
-                    println!("Input {input_num:2}  = {guess}");
-                    output.push(guess);
-                    return Some(output)
+                replacements.0.pop();
+                None
+            };
+            thread_fns.push(thread_fn);
+        }
+        let output = std::thread::scope(|t| {
+            let mut threads = vec![];
+            let mut outputs = vec![];
+            for thread_fn in thread_fns {
+                // if stop.load(std::sync::atomic::Ordering::Relaxed) { break }
+                if input_num == 1 {
+                    threads.push(t.spawn(thread_fn));
+                } else {
+                    let output = thread_fn();
+                    if output.is_some() { return output }
+                    outputs.push(output);
                 }
             }
-            replacements.0.pop();
-        }
-        None
+            while !threads.is_empty() {
+                let output = threads.remove(0).join().unwrap();
+                outputs.push(output.clone());
+                if output.is_some() {
+                    stop.store(true, std::sync::atomic::Ordering::Relaxed);
+                    return output;
+                }
+            }
+            None
+        });
+        if input_num == 0 { println!(); }
+        output
     }
 
 pub fn part1(input: &str) -> i64 {
@@ -639,14 +788,15 @@ pub fn part1(input: &str) -> i64 {
         state.exec_instruction(instruction);
         state.reduce();
     }
-    println!("{state:?}");
+    // println!("{state:?}");
     let solution = input_replacements(
-        &state.z,
+        &state.z.clone().reduce_full(true),
         0,
         &mut ReductionReplacements(vec![]),
-        &(1..=9).rev(),
+        (1..=9).rev(),
+        Arc::new(AtomicBool::new(false)),
     );
-    solution.unwrap().into_iter().rev().fold(0, |acc, n| acc * 10 + n)
+    solution.unwrap().into_iter().rev().fold(0, |acc, n| acc * 10 + n as i64)
 }
 
 pub fn part2(input: &str) -> i64 {
@@ -660,9 +810,10 @@ pub fn part2(input: &str) -> i64 {
         &state.z,
         0,
         &mut ReductionReplacements(vec![]),
-        &(1..=9),
+        1..=9,
+        Arc::new(AtomicBool::new(false)),
     );
-    solution.unwrap().into_iter().rev().fold(0, |acc, n| acc * 10 + n)
+    solution.unwrap().into_iter().rev().fold(0, |acc, n| acc * 10 + n as i64)
 }
 
 fn parse_input(input: &str) -> Vec<Instruction> {

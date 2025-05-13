@@ -323,7 +323,7 @@ pub mod __hidden_hasher {
     // type HashBuilder = FastHasherBuilder;
     // type HashBuilder = xxhash_rust::xxh3::Xxh3Builder;
     // type HashBuilder = std::hash::RandomState;
-    type HashBuilder = NoRandomState;
+    pub type HashBuilder = NoRandomState;
 
     // #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
     // pub struct FastHasher(Wrapping<u64>);
