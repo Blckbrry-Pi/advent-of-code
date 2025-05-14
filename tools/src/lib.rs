@@ -159,6 +159,77 @@ macro_rules! multi_day_bench {
 }
 
 #[macro_export]
+macro_rules! pos3 {
+    ($inner_type:ty) => {
+        #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+        struct Pos3 { x: $inner_type, y: $inner_type, z: $inner_type }
+        #[allow(dead_code)]
+        impl Pos3 {
+            pub const ZERO: Self = Self { x: 0, y: 0, z: 0 };
+
+            pub const fn add(&self, o: Self) -> Self {
+                Self {
+                    x: self.x.wrapping_add(o.x),
+                    y: self.y.wrapping_add(o.y),
+                    z: self.z.wrapping_add(o.z),
+                }
+            }
+
+            pub const fn neg(&self) -> Self {
+                Self {
+                    x: (0u8 as $inner_type).wrapping_sub(self.x),
+                    y: (0u8 as $inner_type).wrapping_sub(self.y),
+                    z: (0u8 as $inner_type).wrapping_sub(self.z),
+                }
+            }
+
+            pub const fn sub(&self, o: Self) -> Self {
+                Self {
+                    x: self.x.wrapping_sub(o.x),
+                    y: self.y.wrapping_sub(o.y),
+                    z: self.z.wrapping_sub(o.z),
+                }
+            }
+
+            pub const fn mul(&self, s: $inner_type) -> Self {
+                Self {
+                    x: self.x * s,
+                    y: self.y * s,
+                    z: self.z * s,
+                }
+            }
+
+            pub const fn abs(&self) -> Self {
+                Self {
+                    x: if self.x < 0 { (0_u8 as $inner_type).wrapping_sub(self.x) } else { self.x },
+                    y: if self.y < 0 { (0_u8 as $inner_type).wrapping_sub(self.y) } else { self.y },
+                    z: if self.z < 0 { (0_u8 as $inner_type).wrapping_sub(self.z) } else { self.z },
+                }
+            }
+
+            pub fn manhattan(&self, o: Self) -> $inner_type {
+                let x_diff = if self.x > o.x {
+                    self.x - o.x
+                } else {
+                    o.x - self.x
+                };
+                let y_diff = if self.y > o.y {
+                    self.y - o.y
+                } else {
+                    o.y - self.y
+                };
+                let z_diff = if self.z > o.z {
+                    self.z - o.z
+                } else {
+                    o.z - self.z
+                };
+                x_diff + y_diff + z_diff
+            }
+        }
+    };
+}
+
+#[macro_export]
 macro_rules! pos {
     ($inner_type:ty $(: $($derives:ident),+)? $(; +y => $dir:ident)?) => {
         // #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
