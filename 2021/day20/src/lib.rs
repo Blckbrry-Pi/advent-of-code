@@ -187,7 +187,6 @@ pub fn part2(input: &str) -> usize {
     for _ in 0..50 {
         image = image.enhanced_with(&enhancement);
     }
-    println!("{image:?}");
     image.count()
 }
 

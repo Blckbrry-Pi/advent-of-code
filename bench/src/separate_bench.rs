@@ -41,6 +41,25 @@ aoc_tools::day_bench!(day23 2022: day23_2022);
 aoc_tools::day_bench!(day24 2022: day24_2022);
 aoc_tools::day_bench!(day25 2022: day25_2022);
 
+aoc_tools::day_bench!(day08 2021: day08_2021);
+aoc_tools::day_bench!(day09 2021: day09_2021);
+aoc_tools::day_bench!(day10 2021: day10_2021);
+aoc_tools::day_bench!(day11 2021: day11_2021);
+aoc_tools::day_bench!(day12 2021: day12_2021);
+aoc_tools::day_bench!(day13 2021: day13_2021);
+aoc_tools::day_bench!(day14 2021: day14_2021);
+aoc_tools::day_bench!(day15 2021: day15_2021);
+aoc_tools::day_bench!(day16 2021: day16_2021);
+aoc_tools::day_bench!(day17 2021: day17_2021);
+aoc_tools::day_bench!(day18 2021: day18_2021);
+aoc_tools::day_bench!(day19 2021: day19_2021);
+aoc_tools::day_bench!(day20 2021: day20_2021);
+aoc_tools::day_bench!(day21 2021: day21_2021);
+aoc_tools::day_bench!(day22 2021: day22_2021);
+aoc_tools::day_bench!(day23 2021: day23_2021);
+aoc_tools::day_bench!(day24 2021: day24_2021);
+aoc_tools::day_bench!(day25 2021: day25_2021);
+
 criterion_main!(
     // 2024
     day01_2024::day01_2024,
@@ -82,4 +101,24 @@ criterion_main!(
     day23_2022::day23_2022,
     day24_2022::day24_2022,
     day25_2022::day25_2022,
+
+    // 2021
+    day08_2021::day08_2021,
+    day09_2021::day09_2021,
+    day10_2021::day10_2021,
+    day11_2021::day11_2021,
+    day12_2021::day12_2021,
+    day13_2021::day13_2021,
+    day14_2021::day14_2021,
+    day15_2021::day15_2021,
+    day16_2021::day16_2021,
+    day17_2021::day17_2021,
+    day18_2021::day18_2021,
+    day19_2021::day19_2021,
+    day20_2021::day20_2021,
+    day21_2021::day21_2021,
+    day22_2021::day22_2021,
+    day23_2021::day23_2021,
+    day24_2021::day24_2021,
+    day25_2021::day25_2021,
 );

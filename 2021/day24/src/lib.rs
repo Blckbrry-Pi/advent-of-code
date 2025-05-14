@@ -1,7 +1,7 @@
 use std::{cell::LazyCell, hash::Hash, str::FromStr, sync::{atomic::AtomicBool, Arc}};
 aoc_tools::aoc_sol!(day24 2021: part1, part2);
 aoc_tools::fast_hash!();
-aoc_tools::arena!();
+// aoc_tools::arena!();
 
 type Scalar = i32;
 type BoxType<T> = Arc<T>;
@@ -731,12 +731,12 @@ fn input_replacements(
             let thread_fn = move || {
                 let test_base = base.clone_with_replacements(&replacements).reduce_full(input_num <= 1);
                 if test_base.range().contains(0) {
-                    use std::io::Write;
-                    print!("\x1b[0K\r");
-                    for n in replacements.0.iter().copied().chain([guesses.clone().next().unwrap(); 14]).take(14) {
-                        print!("{n}");
-                    }
-                    std::io::stdout().flush().unwrap();
+                    // use std::io::Write;
+                    // print!("\x1b[0K\r");
+                    // for n in replacements.0.iter().copied().chain([guesses.clone().next().unwrap(); 14]).take(14) {
+                    //     print!("{n}");
+                    // }
+                    // std::io::stdout().flush().unwrap();
 
                     if let Some(mut output) = input_replacements(
                         &test_base,
@@ -777,7 +777,7 @@ fn input_replacements(
             }
             None
         });
-        if input_num == 0 { println!(); }
+        // if input_num == 0 { println!(); }
         output
     }
 

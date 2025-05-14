@@ -46,6 +46,25 @@ day23-2022 = { version = "0.1.0", path = "../2022/day23" }
 day24-2022 = { version = "0.1.0", path = "../2022/day24" }
 day25-2022 = { version = "0.1.0", path = "../2022/day25" }
 
+day08-2021 = { version = "0.1.0", path = "../2021/day08" }
+day09-2021 = { version = "0.1.0", path = "../2021/day09" }
+day10-2021 = { version = "0.1.0", path = "../2021/day10" }
+day11-2021 = { version = "0.1.0", path = "../2021/day11" }
+day12-2021 = { version = "0.1.0", path = "../2021/day12" }
+day13-2021 = { version = "0.1.0", path = "../2021/day13" }
+day14-2021 = { version = "0.1.0", path = "../2021/day14" }
+day15-2021 = { version = "0.1.0", path = "../2021/day15" }
+day16-2021 = { version = "0.1.0", path = "../2021/day16" }
+day17-2021 = { version = "0.1.0", path = "../2021/day17" }
+day18-2021 = { version = "0.1.0", path = "../2021/day18" }
+day19-2021 = { version = "0.1.0", path = "../2021/day19" }
+day20-2021 = { version = "0.1.0", path = "../2021/day20" }
+day21-2021 = { version = "0.1.0", path = "../2021/day21" }
+day22-2021 = { version = "0.1.0", path = "../2021/day22" }
+day23-2021 = { version = "0.1.0", path = "../2021/day23" }
+day24-2021 = { version = "0.1.0", path = "../2021/day24" }
+day25-2021 = { version = "0.1.0", path = "../2021/day25" }
+
 criterion = { version = "^0.5", path = "./criterion.rs", features = ["html_reports"] }
 aoc_tools = { version = "0.1.0", path = "../tools" }
 

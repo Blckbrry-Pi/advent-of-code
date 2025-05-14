@@ -194,7 +194,6 @@ pub fn part1(input: &str) -> u16 {
     for number in numbers {
         curr = curr.add_reduce(number);
     }
-    println!("{curr:?}");
     curr.mag()
 }
 
