@@ -263,6 +263,8 @@ macro_rules! pos {
                     };
                     pub const R: Self = Self::E;
                 )?
+                pub const ZERO: Self = Self { x: 0, y: 0 };
+
                 pub fn add(&self, o: Self) -> Self {
                     Self {
                         x: self.x.wrapping_add(o.x),
@@ -775,4 +777,48 @@ impl<const N: usize, T> std::ops::IndexMut<usize> for SmallVec<N, T> {
             Self::Heap(data) => data.iter_mut().nth(idx).unwrap(),
         }
     }
+}
+
+pub fn parse_map<Cell>(input: &str, parser: impl Fn(char) -> Cell) -> Vec<Vec<Cell>> {
+    input.lines()
+        .filter(|l| !l.trim().is_empty())
+        .map(|l| (0..l.len()).map(|i| parser(l.as_bytes()[i] as char)).collect())
+        .collect()
+}
+
+#[macro_export]
+macro_rules! map_struct {
+    ($name:ident of $type:ty $({ $($additional_fields:tt)+ })?, pos $scalar:ty) => {
+        $crate::pos!($scalar; +y=>D);
+        struct $name {
+            rows: Vec<Vec<$type>>,
+            $($($additional_fields)+)?
+        }
+        impl $name {
+            pub fn width(&self) -> usize {
+                self.rows[0].len()
+            }
+            pub fn height(&self) -> usize {
+                self.rows.len()
+            }
+            fn get_raw(&self, pos: Pos) -> Option<&$type> {
+                if 0 > pos.y || pos.y as usize >= self.height() {
+                    return None;
+                }
+                if 0 > pos.x || pos.x as usize >= self.width() {
+                    return None;
+                }
+                Some(&self.rows[pos.y as usize][pos.x as usize])
+            }
+            fn get_mut_raw(&mut self, pos: Pos) -> Option<&mut $type> {
+                if 0 > pos.y || pos.y as usize >= self.height() {
+                    return None;
+                }
+                if 0 > pos.x || pos.x as usize >= self.width() {
+                    return None;
+                }
+                Some(&mut self.rows[pos.y as usize][pos.x as usize])
+            }
+        }
+    };
 }
