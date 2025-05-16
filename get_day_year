@@ -1,0 +1,25 @@
+day=$1
+year=$2
+
+if [ "$day" = "" ]; then
+    echo "Missing day" > /dev/stderr
+    exit 1
+elif [ "$year" = "" ]; then
+    echo "Missing year" > /dev/stderr
+    exit 2
+fi
+
+day=$(expr $day + 0)
+
+if [ $day -lt 10 ]; then
+    day="0$day"
+elif [ $day -gt 25 ]; then
+    echo "Day number is too big. Perhaps you swapped the day and the year?" > /dev/stderr
+    exit 3
+elif [ $year -lt 2015 ]; then
+    echo "Year number is too small. Make sure you use all 4 digits of the year" > /dev/stderr
+    exit 4
+fi
+
+export day=$day
+export year=$year

@@ -1,0 +1,12 @@
+#!/bin/bash
+
+. ./get_day_year
+
+if [ -d "$year/day$day" ]; then
+    echo "Directory for year $year day $day (./$year/day$day) already exists."
+    exit 6
+fi
+
+cp -r ./tools/template "./$year/day$day"
+find "$year/day$day" | grep '\.' /dev/stdin | xargs perl -pi -e 's/YYYY/'"$year"'/g'
+find "$year/day$day" | grep '\.' /dev/stdin | xargs perl -pi -e 's/DD/'"$day"'/g'

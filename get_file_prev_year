@@ -1,24 +1,15 @@
 #!/bin/bash
 
-day_url=$1
-day=$1
-year=$2
+
+. ./get_day_year
+
 cookie=`cat .aoc_cookie`
-
-if [ "$day" = "" ]; then
-    echo "Missing day"
-    exit 1
-elif [ "$year" = "" ]; then
-    echo "Missing year"
-    exit 3
-elif [ "$cookie" = "" ]; then
+if [ "$cookie" = "" ]; then
     echo "Missing cookie"
-    exit 2
+    exit 6
 fi
 
-if [ $day -lt 10 ]; then
-    day="0$day"
-fi
+day_url=$(expr $day + 0)
 
 mkdir -p data/$year
 mkdir data/$year/day$day
