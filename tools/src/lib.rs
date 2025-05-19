@@ -790,6 +790,7 @@ pub fn parse_map<Cell>(input: &str, parser: impl Fn(char) -> Cell) -> Vec<Vec<Ce
 macro_rules! map_struct {
     ($name:ident of $type:ty $({ $($additional_fields:tt)+ })?, pos $scalar:ty) => {
         $crate::pos!($scalar; +y=>D);
+        #[derive(Clone)]
         struct $name {
             rows: Vec<Vec<$type>>,
             $($($additional_fields)+)?
@@ -818,6 +819,23 @@ macro_rules! map_struct {
                     return None;
                 }
                 Some(&mut self.rows[pos.y as usize][pos.x as usize])
+            }
+            fn count_matching(&self, mut pred: impl FnMut(&$type) -> bool) -> usize {
+                self.rows.iter().map(|row| {
+                    row.iter().filter(|c| pred(c)).count()
+                }).sum()
+            }
+        }
+
+        impl Debug for $name {
+            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                for row in &self.rows {
+                    for cell in row {
+                        write!(f, "{cell:?}")?;
+                    }
+                    writeln!(f)?;
+                }
+                Ok(())
             }
         }
     };
