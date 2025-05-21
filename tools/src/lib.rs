@@ -341,6 +341,9 @@ macro_rules! pos {
                     };
                     x_diff + y_diff
                 }
+                pub fn mag_sq(&self) -> $inner_type {
+                    self.x * self.x + self.y * self.y
+                }
             }
         } derives: $($($derives)+)?);
     };
@@ -788,7 +791,7 @@ pub fn parse_map<Cell>(input: &str, parser: impl Fn(char) -> Cell) -> Vec<Vec<Ce
 
 #[macro_export]
 macro_rules! map_struct {
-    ($name:ident of $type:ty $({ $($additional_fields:tt)+ })?, pos $scalar:ty) => {
+    ($name:ident of $type:tt $({ $($additional_fields:tt)+ })?, pos $scalar:ty) => {
         $crate::pos!($scalar; +y=>D);
         #[derive(Clone)]
         struct $name {
@@ -831,7 +834,8 @@ macro_rules! map_struct {
             fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                 for row in &self.rows {
                     for cell in row {
-                        write!(f, "{cell:?}")?;
+                        $crate::map_struct!(@impl $type, f, cell)?;
+                        // write!(f, "{cell:?}")?;
                     }
                     writeln!(f)?;
                 }
@@ -839,4 +843,10 @@ macro_rules! map_struct {
             }
         }
     };
+    (@impl bool, $f:ident, $cell:ident) => {
+        write!($f, "{}", if *$cell { '#' } else { '.' })
+    };
+    (@impl $type:ty, $f:ident, $cell:ident) => {
+        write!($f, "{:?}", $cell)
+    }
 }
