@@ -26,7 +26,7 @@ impl Debug for Cell {
     }
 }
 
-aoc_tools::map_struct!(Ferry of Cell, pos i16);
+aoc_tools::map_struct!(Ferry of Cell, pos i16; +y=>D);
 impl Ferry {
     pub fn step(&mut self, part_2: bool) -> usize {
         let mut changes = 0;

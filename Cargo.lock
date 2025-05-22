@@ -1054,6 +1054,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "day22-2020"
+version = "0.1.0"
+dependencies = [
+ "aoc_tools",
+]
+
+[[package]]
 name = "day22-2021"
 version = "0.1.0"
 dependencies = [
@@ -1082,6 +1089,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "day23-2020"
+version = "0.1.0"
+dependencies = [
+ "aoc_tools",
+]
+
+[[package]]
 name = "day23-2021"
 version = "0.1.0"
 dependencies = [
@@ -1097,6 +1111,13 @@ dependencies = [
 
 [[package]]
 name = "day23-2024"
+version = "0.1.0"
+dependencies = [
+ "aoc_tools",
+]
+
+[[package]]
+name = "day24-2020"
 version = "0.1.0"
 dependencies = [
  "aoc_tools",
@@ -1135,6 +1156,13 @@ name = "day25-2019"
 version = "0.1.0"
 dependencies = [
  "intcode-2019",
+]
+
+[[package]]
+name = "day25-2020"
+version = "0.1.0"
+dependencies = [
+ "aoc_tools",
 ]
 
 [[package]]

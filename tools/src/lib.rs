@@ -791,8 +791,8 @@ pub fn parse_map<Cell>(input: &str, parser: impl Fn(char) -> Cell) -> Vec<Vec<Ce
 
 #[macro_export]
 macro_rules! map_struct {
-    ($name:ident of $type:tt $({ $($additional_fields:tt)+ })?, pos $scalar:ty) => {
-        $crate::pos!($scalar; +y=>D);
+    ($name:ident of $type:tt $({ $($additional_fields:tt)+ })?, pos $($pos_info:tt)+) => {
+        $crate::pos!($($pos_info)+);
         #[derive(Clone)]
         struct $name {
             rows: Vec<Vec<$type>>,
