@@ -60,6 +60,32 @@ aoc_tools::day_bench!(day23 2021: day23_2021);
 aoc_tools::day_bench!(day24 2021: day24_2021);
 aoc_tools::day_bench!(day25 2021: day25_2021);
 
+aoc_tools::day_bench!(day01 2020: day01_2020);
+aoc_tools::day_bench!(day02 2020: day02_2020);
+aoc_tools::day_bench!(day03 2020: day03_2020);
+aoc_tools::day_bench!(day04 2020: day04_2020);
+aoc_tools::day_bench!(day05 2020: day05_2020);
+aoc_tools::day_bench!(day06 2020: day06_2020);
+aoc_tools::day_bench!(day07 2020: day07_2020);
+aoc_tools::day_bench!(day08 2020: day08_2020);
+aoc_tools::day_bench!(day09 2020: day09_2020);
+aoc_tools::day_bench!(day10 2020: day10_2020);
+aoc_tools::day_bench!(day11 2020: day11_2020);
+aoc_tools::day_bench!(day12 2020: day12_2020);
+aoc_tools::day_bench!(day13 2020: day13_2020);
+aoc_tools::day_bench!(day14 2020: day14_2020);
+aoc_tools::day_bench!(day15 2020: day15_2020);
+aoc_tools::day_bench!(day16 2020: day16_2020);
+aoc_tools::day_bench!(day17 2020: day17_2020);
+aoc_tools::day_bench!(day18 2020: day18_2020);
+aoc_tools::day_bench!(day19 2020: day19_2020);
+aoc_tools::day_bench!(day20 2020: day20_2020);
+aoc_tools::day_bench!(day21 2020: day21_2020);
+aoc_tools::day_bench!(day22 2020: day22_2020);
+aoc_tools::day_bench!(day23 2020: day23_2020);
+aoc_tools::day_bench!(day24 2020: day24_2020);
+aoc_tools::day_bench!(day25 2020: day25_2020);
+
 criterion_main!(
     // 2024
     day01_2024::day01_2024,
@@ -121,4 +147,31 @@ criterion_main!(
     day23_2021::day23_2021,
     day24_2021::day24_2021,
     day25_2021::day25_2021,
+
+    // 2020
+    day01_2020::day01_2020,
+    day02_2020::day02_2020,
+    day03_2020::day03_2020,
+    day04_2020::day04_2020,
+    day05_2020::day05_2020,
+    day06_2020::day06_2020,
+    day07_2020::day07_2020,
+    day08_2020::day08_2020,
+    day09_2020::day09_2020,
+    day10_2020::day10_2020,
+    day11_2020::day11_2020,
+    day12_2020::day12_2020,
+    day13_2020::day13_2020,
+    day14_2020::day14_2020,
+    day15_2020::day15_2020,
+    day16_2020::day16_2020,
+    day17_2020::day17_2020,
+    day18_2020::day18_2020,
+    day19_2020::day19_2020,
+    day20_2020::day20_2020,
+    day21_2020::day21_2020,
+    day22_2020::day22_2020,
+    day23_2020::day23_2020,
+    day24_2020::day24_2020,
+    day25_2020::day25_2020,
 );

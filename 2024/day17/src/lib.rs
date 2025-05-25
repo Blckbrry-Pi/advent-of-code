@@ -1,5 +1,3 @@
-use std::fmt::Write;
-
 aoc_tools::aoc_sol!(day17 2024: part1, part2);
 
 // Instruction { opcode: Bst, operand: Operand(4) }
