@@ -26,20 +26,21 @@ impl CupRing {
         self.next_indicies[self.curr as usize] = after;
         [a, b, c]
     }
-    pub fn insert_3_after(&mut self, at: u32, values: [u32; 3]) {
+    pub fn insert_3_after(&mut self, at: u32, [a, _b, c]: [u32; 3]) {
         let after = self.next_indicies[at as usize];
-        self.next_indicies[at as usize] = values[0];
-        self.next_indicies[values[0] as usize] = values[1];
-        self.next_indicies[values[1] as usize] = values[2];
-        self.next_indicies[values[2] as usize] = after;
+        self.next_indicies[at as usize] = a;
+        // self.next_indicies[a as usize] = b; // This is already done
+        // self.next_indicies[b as usize] = c; // This is already done
+        self.next_indicies[c as usize] = after;
     }
     pub fn find_insertion_pos(&self, values: [u32; 3]) -> u32 {
-        for i in (1..self.curr).rev().chain((1..=self.max).rev()) {
-            if i == self.curr { continue }
+        let mut i = self.curr;
+        loop {
+            i -= 1;
+            if i == 0 { i = self.max; }
             if values.contains(&i) { continue }
             return i;
         }
-        panic!("Invalid ring");
     }
     pub fn do_step(&mut self) {
         if DEBUG { println!("cups: {self:?}") }
@@ -95,6 +96,7 @@ pub fn part1(input: &str) -> u64 {
 
 pub fn part2(input: &str) -> u64 {
     let mut values = parse_input(input);
+    values.reserve(1_000_000 - values.len());
     values.extend(values.len() as u32 + 1..=1_000_000);
 
     let mut ring = CupRing::from_list(&values);
