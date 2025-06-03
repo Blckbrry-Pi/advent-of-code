@@ -7,7 +7,8 @@ pub mod instruction;
 pub mod machine;
 
 pub fn parse_program(input: &'static str, extend: usize) -> Vec<isize> {
-    let mut mem: Vec<_> = input.split(',')
+    let mut mem: Vec<_> = input.trim_ascii()
+        .split(',')
         .map(|num| num.parse().unwrap())
         .collect();
 
