@@ -19,7 +19,7 @@ impl Pos3 {
             1 => base.rot90_x(),
             2 => base.rot90_x().rot90_x(),
             3 => base.rot90_x().rot90_x().rot90_x(),
-            _ => unreachable!("Mod 4"),
+            _ => panic!("Mod 4"),
         }
     }
     pub const fn inverse_rotation(&self, rotation: u8) -> Self {
@@ -28,7 +28,7 @@ impl Pos3 {
             1 => self.rot90_x().rot90_x().rot90_x(),
             2 => self.rot90_x().rot90_x(),
             3 => self.rot90_x(),
-            _ => unreachable!("Mod 4"),
+            _ => panic!("Mod 4"),
         };
         match rotation / 4 {
             0 => base,

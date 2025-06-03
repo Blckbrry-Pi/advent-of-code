@@ -35,26 +35,27 @@ impl Debug for State {
     }
 }
 
-fn history_after_n(n: usize, starting: &[u32]) -> State {
+fn history_after_n(n: usize, starting: &[u32]) -> (State, u32) {
     let mut history = State::start(n);
     let mut next = 0;
     for &number in starting {
         next = history.add(number);
     }
-    while history.next_step_num <= n as u32 {
+    while history.next_step_num < n as u32 {
         next = history.add(next);
     }
-    history
+    history.add(next);
+    (history, next)
 }
 
 pub fn part1(input: &str) -> u32 {
     let starting_numbers = parse_input(input);
-    history_after_n(2020, &starting_numbers).prev
+    history_after_n(2020, &starting_numbers).1
 }
 
 pub fn part2(input: &str) -> u32 {
     let starting_numbers = parse_input(input);
-    history_after_n(30_000_000, &starting_numbers).prev
+    history_after_n(30_000_000, &starting_numbers).1
 }
 
 fn parse_input(input: &str) -> Vec<u32> {
