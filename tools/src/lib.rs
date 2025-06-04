@@ -850,3 +850,26 @@ macro_rules! map_struct {
         write!($f, "{:?}", $cell)
     }
 }
+
+pub fn gcd<T>(a: T, b: T) -> T
+where T: Copy
+    + Into<i128>
+    + std::ops::Sub<Output = T>
+    + std::ops::Mul<Output = T>
+    + std::ops::Div<Output = T>
+{
+    if b.into() == 0 {
+        a
+    } else {
+        gcd(b, a - a / b * b)
+    }
+}
+pub fn lcm<T>(a: T, b: T) -> T
+where T: Copy
+    + Into<i128>
+    + std::ops::Sub<Output = T>
+    + std::ops::Mul<Output = T>
+    + std::ops::Div<Output = T>
+{
+    a / gcd(a, b) * b
+}
