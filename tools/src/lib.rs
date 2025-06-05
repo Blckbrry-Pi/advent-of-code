@@ -344,6 +344,10 @@ macro_rules! pos {
                 pub fn mag_sq(&self) -> $inner_type {
                     self.x * self.x + self.y * self.y
                 }
+
+                pub fn from_usize(x: usize, y: usize) -> Self {
+                    Self { x: x as $inner_type, y: y as $inner_type }
+                }
             }
         } derives: $($($derives)+)?);
     };
@@ -827,6 +831,16 @@ macro_rules! map_struct {
                 self.rows.iter().map(|row| {
                     row.iter().filter(|c| pred(c)).count()
                 }).sum()
+            }
+            fn find(&self, mut pred: impl FnMut(&$type) -> bool) -> Option<Pos> {
+                for y in 0..self.height() {
+                    for x in 0..self.width() {
+                        let pos = Pos::from_usize(x, y);
+                        let Some(val) = self.get_raw(pos) else { continue };
+                        if pred(val) { return Some(pos) }
+                    }
+                }
+                None
             }
         }
 
