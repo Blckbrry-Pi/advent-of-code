@@ -1,3 +1,5 @@
+pub mod graph;
+
 #[macro_export]
 macro_rules! aoc_sol {
     ($day:ident $($year:literal)? $($input_type:ident)?: $($part_fn:ident),+) => {
