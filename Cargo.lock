@@ -579,6 +579,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "day01-2018"
+version = "0.1.0"
+dependencies = [
+ "aoc_tools",
+]
+
+[[package]]
 name = "day01-2019"
 version = "0.1.0"
 
@@ -598,6 +605,13 @@ dependencies = [
 
 [[package]]
 name = "day01-2024"
+version = "0.1.0"
+dependencies = [
+ "aoc_tools",
+]
+
+[[package]]
+name = "day02-2018"
 version = "0.1.0"
 dependencies = [
  "aoc_tools",
@@ -632,6 +646,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "day03-2018"
+version = "0.1.0"
+dependencies = [
+ "aoc_tools",
+]
+
+[[package]]
 name = "day03-2019"
 version = "0.1.0"
 
@@ -650,6 +671,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "day04-2018"
+version = "0.1.0"
+dependencies = [
+ "aoc_tools",
+]
+
+[[package]]
 name = "day04-2019"
 version = "0.1.0"
 
@@ -662,6 +690,13 @@ dependencies = [
 
 [[package]]
 name = "day04-2024"
+version = "0.1.0"
+dependencies = [
+ "aoc_tools",
+]
+
+[[package]]
+name = "day05-2018"
 version = "0.1.0"
 dependencies = [
  "aoc_tools",
@@ -689,6 +724,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "day06-2018"
+version = "0.1.0"
+dependencies = [
+ "aoc_tools",
+]
+
+[[package]]
 name = "day06-2019"
 version = "0.1.0"
 
@@ -701,6 +743,13 @@ dependencies = [
 
 [[package]]
 name = "day06-2024"
+version = "0.1.0"
+dependencies = [
+ "aoc_tools",
+]
+
+[[package]]
+name = "day07-2018"
 version = "0.1.0"
 dependencies = [
  "aoc_tools",
@@ -722,6 +771,13 @@ dependencies = [
 
 [[package]]
 name = "day07-2024"
+version = "0.1.0"
+dependencies = [
+ "aoc_tools",
+]
+
+[[package]]
+name = "day08-2018"
 version = "0.1.0"
 dependencies = [
  "aoc_tools",
@@ -756,6 +812,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "day09-2018"
+version = "0.1.0"
+dependencies = [
+ "aoc_tools",
+]
+
+[[package]]
 name = "day09-2019"
 version = "0.1.0"
 dependencies = [
@@ -778,6 +841,13 @@ dependencies = [
 
 [[package]]
 name = "day09-2024"
+version = "0.1.0"
+dependencies = [
+ "aoc_tools",
+]
+
+[[package]]
+name = "day10-2018"
 version = "0.1.0"
 dependencies = [
  "aoc_tools",

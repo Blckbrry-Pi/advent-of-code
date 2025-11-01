@@ -40,8 +40,16 @@ members = [
     "2019/day11", "2019/day12", "2019/day13", "2019/day14", "2019/day15",
     "2019/day16", "2019/day17", "2019/day18", "2019/day19", "2019/day20",
     "2019/day21", "2019/day22", "2019/day23", "2019/day24", "2019/day25",
+
+    # 2018
+    "2018/day01", "2018/day02", "2018/day03", "2018/day04", "2018/day05",
+    "2018/day06", "2018/day07", "2018/day08", "2018/day09", "2018/day10",
 ]
 
 [profile.flamegraph]
 inherits = "release"
+debug = true
+
+[profile.flamegraph_debug]
+inherits = "dev"
 debug = true

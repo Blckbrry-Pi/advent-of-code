@@ -609,7 +609,7 @@ impl<const N: usize, T> SmallVec<N, T> {
         }
     }
 
-    pub fn iter(&self) -> SmallVecIter<N, T> {
+    pub fn iter(&self) -> SmallVecIter<'_, N, T> {
         match self {
             Self::Heap(data) => SmallVecIter::Heap(data.iter()),
             Self::Stack(data, len) => SmallVecIter::Stack(data, *len, 0),

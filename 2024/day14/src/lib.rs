@@ -1,4 +1,3 @@
-#![feature(array_chunks)]
 #![feature(portable_simd)]
 
 type PosType = u8;
