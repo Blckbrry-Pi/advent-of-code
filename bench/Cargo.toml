@@ -91,6 +91,58 @@ day23-2020 = { version = "0.1.0", path = "../2020/day23" }
 day24-2020 = { version = "0.1.0", path = "../2020/day24" }
 day25-2020 = { version = "0.1.0", path = "../2020/day25" }
 
+day01-2019 = { version = "0.1.0", path = "../2019/day01" }
+day02-2019 = { version = "0.1.0", path = "../2019/day02" }
+day03-2019 = { version = "0.1.0", path = "../2019/day03" }
+day04-2019 = { version = "0.1.0", path = "../2019/day04" }
+day05-2019 = { version = "0.1.0", path = "../2019/day05" }
+day06-2019 = { version = "0.1.0", path = "../2019/day06" }
+day07-2019 = { version = "0.1.0", path = "../2019/day07" }
+day08-2019 = { version = "0.1.0", path = "../2019/day08" }
+day09-2019 = { version = "0.1.0", path = "../2019/day09" }
+day10-2019 = { version = "0.1.0", path = "../2019/day10" }
+day11-2019 = { version = "0.1.0", path = "../2019/day11" }
+day12-2019 = { version = "0.1.0", path = "../2019/day12" }
+day13-2019 = { version = "0.1.0", path = "../2019/day13" }
+day14-2019 = { version = "0.1.0", path = "../2019/day14" }
+day15-2019 = { version = "0.1.0", path = "../2019/day15" }
+day16-2019 = { version = "0.1.0", path = "../2019/day16" }
+day17-2019 = { version = "0.1.0", path = "../2019/day17" }
+day18-2019 = { version = "0.1.0", path = "../2019/day18" }
+day19-2019 = { version = "0.1.0", path = "../2019/day19" }
+day20-2019 = { version = "0.1.0", path = "../2019/day20" }
+day21-2019 = { version = "0.1.0", path = "../2019/day21" }
+day22-2019 = { version = "0.1.0", path = "../2019/day22" }
+day23-2019 = { version = "0.1.0", path = "../2019/day23" }
+day24-2019 = { version = "0.1.0", path = "../2019/day24" }
+day25-2019 = { version = "0.1.0", path = "../2019/day25" }
+
+day01-2018 = { version = "0.1.0", path = "../2018/day01" }
+day02-2018 = { version = "0.1.0", path = "../2018/day02" }
+day03-2018 = { version = "0.1.0", path = "../2018/day03" }
+day04-2018 = { version = "0.1.0", path = "../2018/day04" }
+day05-2018 = { version = "0.1.0", path = "../2018/day05" }
+day06-2018 = { version = "0.1.0", path = "../2018/day06" }
+day07-2018 = { version = "0.1.0", path = "../2018/day07" }
+day08-2018 = { version = "0.1.0", path = "../2018/day08" }
+day09-2018 = { version = "0.1.0", path = "../2018/day09" }
+day10-2018 = { version = "0.1.0", path = "../2018/day10" }
+# day11-2018 = { version = "0.1.0", path = "../2018/day11" }
+# day12-2018 = { version = "0.1.0", path = "../2018/day12" }
+# day13-2018 = { version = "0.1.0", path = "../2018/day13" }
+# day14-2018 = { version = "0.1.0", path = "../2018/day14" }
+# day15-2018 = { version = "0.1.0", path = "../2018/day15" }
+# day16-2018 = { version = "0.1.0", path = "../2018/day16" }
+# day17-2018 = { version = "0.1.0", path = "../2018/day17" }
+# day18-2018 = { version = "0.1.0", path = "../2018/day18" }
+# day19-2018 = { version = "0.1.0", path = "../2018/day19" }
+# day20-2018 = { version = "0.1.0", path = "../2018/day20" }
+# day21-2018 = { version = "0.1.0", path = "../2018/day21" }
+# day22-2018 = { version = "0.1.0", path = "../2018/day22" }
+# day23-2018 = { version = "0.1.0", path = "../2018/day23" }
+# day24-2018 = { version = "0.1.0", path = "../2018/day24" }
+# day25-2018 = { version = "0.1.0", path = "../2018/day25" }
+
 criterion = { version = "^0.5", path = "./criterion.rs", features = ["html_reports"] }
 aoc_tools = { version = "0.1.0", path = "../tools" }
 
@@ -112,4 +164,14 @@ harness = false
 [[bench]]
 name = "2020"
 path = "src/bench2020.rs"
+harness = false
+
+[[bench]]
+name = "2019"
+path = "src/bench2019.rs"
+harness = false
+
+[[bench]]
+name = "2018"
+path = "src/bench2018.rs"
 harness = false

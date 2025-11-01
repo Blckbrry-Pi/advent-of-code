@@ -1,69 +1,24 @@
 aoc_tools::aoc_sol!(day16 2019: part1, part2);
 
-type Scalar = i64;
+type Scalar = i32;
 
 #[derive(Debug)]
 struct Sections {
-    sums: Vec<Vec<Scalar>>,
+    sums: Vec<Scalar>,
 }
 impl Sections {
-    #[inline(never)]
     pub fn from_inputs(input: &[Scalar]) -> Self {
-        let mut output = Self { sums: vec![Vec::with_capacity(input.len())] };
+        let mut running_sum = 0;
+        let mut sums = Vec::with_capacity(input.len() + 1);
+        sums.push(0);
         for i in 0..input.len() {
-            output.sums[0].push(input[i]);
+            running_sum += input[i];
+            sums.push(running_sum);
         }
-        for bit in 1..usize::BITS as u8 - input.len().leading_zeros() as u8 {
-            let step_size = 1 << bit;
-            let count = input.len() / step_size;
-            output.sums.push(Vec::with_capacity(count));
-            for i in 0..count {
-                let l = output.sums[bit as usize - 1][i * 2];
-                let r = output.sums[bit as usize - 1][i * 2 + 1];
-                output.sums[bit as usize].push(l + r);
-            }
-        }
-        output
+        Self { sums }
     }
-    // #[inline(never)]
     pub fn get_sum(&self, range: (usize, usize)) -> Scalar {
-        fn get_midpoint(range: (usize, usize)) -> usize {
-            let mut midpoint = range.0;
-            loop {
-                let diff = 1 << midpoint.trailing_zeros();
-                if midpoint + diff > range.1 { break } 
-                else { midpoint += diff; }
-            }
-            midpoint
-        }
-        fn get_start_to_mid(s: &Sections, mut start: usize, mid: usize) -> Scalar {
-            let mut sum = 0;
-            for bit in 0..mid.trailing_zeros() {
-                let step = 1 << bit;
-                if bit >= start.trailing_zeros() {
-                    sum += s.sums[bit as usize][start / step];
-                    start += step;
-                }
-            }
-            sum
-        }
-        fn get_mid_to_end(s: &Sections, mut mid: usize, end: usize) -> Scalar {
-            let mut sum = 0;
-            for bit in (0..mid.trailing_zeros()).rev() {
-                let step = 1 << bit;
-                if mid + step <= end {
-                    sum += s.sums[bit as usize][mid / step];
-                    mid += step;
-                }
-            }
-            sum
-        }
-
-        if range.0 == range.1 { return 0 }
-        let midpoint = get_midpoint(range);
-        let s_to_m = get_start_to_mid(self, range.0, midpoint);
-        let m_to_e = get_mid_to_end(self, midpoint, range.1);
-        s_to_m + m_to_e
+        self.sums[range.1] - self.sums[range.0]
     }
 }
 
@@ -80,6 +35,7 @@ pub fn ranges(output_idx: usize) -> impl Iterator<Item = ((usize, usize), Scalar
         let mul = [0, 1, 0, -1][i % 4];
         let start = i * index_multiplier;
         let end = (i+1) * index_multiplier;
+        let (start, end) = (start.saturating_sub(1), end.saturating_sub(1));
         ((start, end), mul)
     })
 }
@@ -90,50 +46,74 @@ pub fn to_num(digits: &[Scalar]) -> Scalar {
 
 pub fn part1(input: &str) -> Scalar {
     let mut input = parse_input(input);
+
+    let ranges: Vec<Vec<_>> = (0..input.len())
+        .map(ranges)
+        .map(|range| range.take_while(|v| v.0.0 < input.len()))
+        .map(|range| range.map(|v| ((v.0.0, v.0.1.min(input.len())), v.1)))
+        .map(|range| range.filter(|v| v.1 != 0))
+        .map(|range| range.collect())
+        .collect();
+
     for _ in 0..100 {
-        let mut output = vec![0; input.len()];
-        for output_digit_idx in 0..output.len() {
-            let output_digit = input.iter()
-                .copied()
-                .zip(pattern(output_digit_idx))
-                .fold(0, |sum, (a, b)| sum + a * b);
-
-            output[output_digit_idx] = output_digit.abs() % 10; // Set last digit
-        }
-        input = output;
-    }
-    input[0..8].iter().fold(0, |n, digit| n * 10 + *digit)
-}
-
-pub fn part2(input: &str) -> Scalar {
-    let mut input = parse_input(input).repeat(10000);
-    let offset = to_num(&input[0..7]) as usize;
-    for i in 0..100 {
-        input.insert(0, 0);
         let sections = Sections::from_inputs(&input);
-
         let mut output = vec![];
-        for output_digit_idx in 0..input.len()-1 {
+        for output_digit_idx in 0..input.len() {
             let mut sum = 0;
-            for ((start, end), mul) in ranges(output_digit_idx) {
-                if start >= input.len() { break }
-                if mul == 0 { continue }
-
-                let end = end.min(input.len());
-
-                let range_sum = if output_digit_idx > 4 {
-                    sections.get_sum((start, end))
-                } else {
-                    input[start..end].iter().sum()
-                };
-                sum += mul * range_sum;
+            for &((start, end), mul) in &ranges[output_digit_idx] {
+                sum += mul * sections.get_sum((start, end));
             }
             output.push(sum.abs() % 10);
         }
         input = output;
-        println!("{i}");
     }
-    to_num(&input[offset..offset+8])
+    to_num(&input[0..8])
+}
+
+// #[inline(never)]
+pub fn part2rangesgen(offset: usize, len: usize) -> Vec<Vec<((usize, usize), Scalar)>> {
+    (offset..len)
+        .map(ranges)
+        .map(|range| range.skip_while(|&((_, e), _)| e < offset))
+        .map(|range| range.take_while(|&((s, _), _)| s < len))
+        .map(|range| range.filter(|&(_, mul)| mul != 0))
+        .map(|range| range.map(|((s, e), mul)| ((s, e.min(len)), mul)))
+        .map(|range| range.map(|((s, e), mul)| ((s.max(offset), e), mul)))
+        .map(|range| range.map(|((s, e), mul)| ((s - offset, e - offset), mul)))
+        .map(|range| range.collect())
+        .collect()
+}
+
+pub fn part2(input: &str) -> Scalar {
+    let input = parse_input(input);
+    let base_len = input.len();
+    let offset = to_num(&input[0..7]) as usize;
+
+    let mut copies_omitted = offset / base_len;
+    let mut skipped = offset - copies_omitted * base_len;
+    let mut input: Vec<_> = input.iter()
+        .skip(skipped)
+        .chain(std::iter::repeat_n(&input, 10_000 - copies_omitted - 1).flatten())
+        .copied()
+        .collect();
+
+
+    let ranges: Vec<Vec<_>> = part2rangesgen(offset, base_len * 10_000);
+
+    for i in 0..100 {
+        let sections = Sections::from_inputs(&input);
+        let mut output = vec![];
+        for output_digit_idx in 0..input.len() {
+            let mut sum = 0;
+            for &((start, end), mul) in &ranges[output_digit_idx] {
+                sum += mul * sections.get_sum((start, end));
+            }
+            output.push(sum.abs() % 10);
+        }
+        input = output;
+    }
+
+    to_num(&input[..8])
 }
 
 fn parse_input(input: &str) -> Vec<Scalar> {

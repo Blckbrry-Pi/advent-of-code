@@ -86,6 +86,60 @@ aoc_tools::day_bench!(day23 2020: day23_2020);
 aoc_tools::day_bench!(day24 2020: day24_2020);
 aoc_tools::day_bench!(day25 2020: day25_2020);
 
+// aoc_tools::day_bench!(day01 2019: day01_2019);
+// aoc_tools::day_bench!(day02 2019: day02_2019);
+// aoc_tools::day_bench!(day03 2019: day03_2019);
+// aoc_tools::day_bench!(day04 2019: day04_2019);
+// aoc_tools::day_bench!(day05 2019: day05_2019);
+// aoc_tools::day_bench!(day06 2019: day06_2019);
+// aoc_tools::day_bench!(day07 2019: day07_2019);
+// aoc_tools::day_bench!(day08 2019: day08_2019);
+// aoc_tools::day_bench!(day09 2019: day09_2019);
+// aoc_tools::day_bench!(day10 2019: day10_2019);
+// aoc_tools::day_bench!(day11 2019: day11_2019);
+// aoc_tools::day_bench!(day12 2019: day12_2019);
+// aoc_tools::day_bench!(day13 2019: day13_2019);
+// aoc_tools::day_bench!(day14 2019: day14_2019);
+// aoc_tools::day_bench!(day15 2019: day15_2019);
+// aoc_tools::day_bench!(day16 2019: day16_2019);
+// aoc_tools::day_bench!(day17 2019: day17_2019);
+// aoc_tools::day_bench!(day18 2019: day18_2019);
+// aoc_tools::day_bench!(day19 2019: day19_2019);
+// aoc_tools::day_bench!(day20 2019: day20_2019);
+// aoc_tools::day_bench!(day21 2019: day21_2019);
+// aoc_tools::day_bench!(day22 2019: day22_2019);
+// aoc_tools::day_bench!(day23 2019: day23_2019);
+// aoc_tools::day_bench!(day24 2019: day24_2019);
+// aoc_tools::day_bench!(day25 2019: day25_2019);
+
+aoc_tools::day_bench!(day01 2018: day01_2018);
+aoc_tools::day_bench!(day02 2018: day02_2018);
+aoc_tools::day_bench!(day03 2018: day03_2018);
+aoc_tools::day_bench!(day04 2018: day04_2018);
+aoc_tools::day_bench!(day05 2018: day05_2018);
+aoc_tools::day_bench!(day06 2018: day06_2018);
+aoc_tools::day_bench!(day07 2018: day07_2018);
+aoc_tools::day_bench!(day08 2018: day08_2018);
+aoc_tools::day_bench!(day09 2018: day09_2018);
+aoc_tools::day_bench!(day10 2018: day10_2018);
+/*
+aoc_tools::day_bench!(day11 2018: day11_2018);
+aoc_tools::day_bench!(day12 2018: day12_2018);
+aoc_tools::day_bench!(day13 2018: day13_2018);
+aoc_tools::day_bench!(day14 2018: day14_2018);
+aoc_tools::day_bench!(day15 2018: day15_2018);
+aoc_tools::day_bench!(day16 2018: day16_2018);
+aoc_tools::day_bench!(day17 2018: day17_2018);
+aoc_tools::day_bench!(day18 2018: day18_2018);
+aoc_tools::day_bench!(day19 2018: day19_2018);
+aoc_tools::day_bench!(day20 2018: day20_2018);
+aoc_tools::day_bench!(day21 2018: day21_2018);
+aoc_tools::day_bench!(day22 2018: day22_2018);
+aoc_tools::day_bench!(day23 2018: day23_2018);
+aoc_tools::day_bench!(day24 2018: day24_2018);
+aoc_tools::day_bench!(day25 2018: day25_2018);
+*/
+
 criterion_main!(
     // 2024
     day01_2024::day01_2024,
@@ -174,4 +228,60 @@ criterion_main!(
     day23_2020::day23_2020,
     day24_2020::day24_2020,
     day25_2020::day25_2020,
+
+    // 2019
+    // day01_2019::day01_2019,
+    // day02_2019::day02_2019,
+    // day03_2019::day03_2019,
+    // day04_2019::day04_2019,
+    // day05_2019::day05_2019,
+    // day06_2019::day06_2019,
+    // day07_2019::day07_2019,
+    // day08_2019::day08_2019,
+    // day09_2019::day09_2019,
+    // day10_2019::day10_2019,
+    // day11_2019::day11_2019,
+    // day12_2019::day12_2019,
+    // day13_2019::day13_2019,
+    // day14_2019::day14_2019,
+    // day15_2019::day15_2019,
+    // day16_2019::day16_2019,
+    // day17_2019::day17_2019,
+    // day18_2019::day18_2019,
+    // day19_2019::day19_2019,
+    // day20_2019::day20_2019,
+    // day21_2019::day21_2019,
+    // day22_2019::day22_2019,
+    // day23_2019::day23_2019,
+    // day24_2019::day24_2019,
+    // day25_2019::day25_2019,
+
+    // 2018
+    day01_2018::day01_2018,
+    day02_2018::day02_2018,
+    day03_2018::day03_2018,
+    day04_2018::day04_2018,
+    day05_2018::day05_2018,
+    day06_2018::day06_2018,
+    day07_2018::day07_2018,
+    /*
+    day08_2018::day08_2018,
+    day09_2018::day09_2018,
+    day10_2018::day10_2018,
+    day11_2018::day11_2018,
+    day12_2018::day12_2018,
+    day13_2018::day13_2018,
+    day14_2018::day14_2018,
+    day15_2018::day15_2018,
+    day16_2018::day16_2018,
+    day17_2018::day17_2018,
+    day18_2018::day18_2018,
+    day19_2018::day19_2018,
+    day20_2018::day20_2018,
+    day21_2018::day21_2018,
+    day22_2018::day22_2018,
+    day23_2018::day23_2018,
+    day24_2018::day24_2018,
+    day25_2018::day25_2018,
+    */
 );
