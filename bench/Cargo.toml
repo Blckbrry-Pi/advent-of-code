@@ -130,8 +130,8 @@ day10-2018 = { version = "0.1.0", path = "../2018/day10" }
 day11-2018 = { version = "0.1.0", path = "../2018/day11" }
 day12-2018 = { version = "0.1.0", path = "../2018/day12" }
 day13-2018 = { version = "0.1.0", path = "../2018/day13" }
-# day14-2018 = { version = "0.1.0", path = "../2018/day14" }
-# day15-2018 = { version = "0.1.0", path = "../2018/day15" }
+day14-2018 = { version = "0.1.0", path = "../2018/day14" }
+day15-2018 = { version = "0.1.0", path = "../2018/day15" }
 # day16-2018 = { version = "0.1.0", path = "../2018/day16" }
 # day17-2018 = { version = "0.1.0", path = "../2018/day17" }
 # day18-2018 = { version = "0.1.0", path = "../2018/day18" }

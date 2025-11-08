@@ -125,9 +125,9 @@ aoc_tools::day_bench!(day10 2018: day10_2018);
 aoc_tools::day_bench!(day11 2018: day11_2018);
 aoc_tools::day_bench!(day12 2018: day12_2018);
 aoc_tools::day_bench!(day13 2018: day13_2018);
-/*
 aoc_tools::day_bench!(day14 2018: day14_2018);
 aoc_tools::day_bench!(day15 2018: day15_2018);
+/*
 aoc_tools::day_bench!(day16 2018: day16_2018);
 aoc_tools::day_bench!(day17 2018: day17_2018);
 aoc_tools::day_bench!(day18 2018: day18_2018);
@@ -270,9 +270,9 @@ criterion_main!(
     day11_2018::day11_2018,
     day12_2018::day12_2018,
     day13_2018::day13_2018,
-    /*
     day14_2018::day14_2018,
     day15_2018::day15_2018,
+    /*
     day16_2018::day16_2018,
     day17_2018::day17_2018,
     day18_2018::day18_2018,

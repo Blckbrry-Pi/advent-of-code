@@ -860,10 +860,18 @@ macro_rules! map_struct {
         }
     };
     (@impl bool, $f:ident, $cell:ident) => {
-        write!($f, "{}", if *$cell { '#' } else { '.' })
+        if $f.alternate() {
+            write!($f, "{:5}", $cell)
+        } else {
+            write!($f, "{}", if *$cell { '#' } else { '.' })
+        }
     };
     (@impl $type:ty, $f:ident, $cell:ident) => {
-        write!($f, "{:?}", $cell)
+        if $f.alternate() {
+            write!($f, "{:#?}", $cell)
+        } else {
+            write!($f, "{:?}", $cell)
+        }
     }
 }
 

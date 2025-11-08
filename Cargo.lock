@@ -334,10 +334,12 @@ dependencies = [
  "day13-2020",
  "day13-2021",
  "day13-2024",
+ "day14-2018",
  "day14-2019",
  "day14-2020",
  "day14-2021",
  "day14-2024",
+ "day15-2018",
  "day15-2019",
  "day15-2020",
  "day15-2021",
@@ -1031,6 +1033,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "day14-2018"
+version = "0.1.0"
+dependencies = [
+ "aoc_tools",
+]
+
+[[package]]
 name = "day14-2019"
 version = "0.1.0"
 dependencies = [
@@ -1053,6 +1062,13 @@ dependencies = [
 
 [[package]]
 name = "day14-2024"
+version = "0.1.0"
+dependencies = [
+ "aoc_tools",
+]
+
+[[package]]
+name = "day15-2018"
 version = "0.1.0"
 dependencies = [
  "aoc_tools",
