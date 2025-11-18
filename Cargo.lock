@@ -1104,6 +1104,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "day16-2018"
+version = "0.1.0"
+dependencies = [
+ "aoc_tools",
+ "wrist_device",
+]
+
+[[package]]
 name = "day16-2019"
 version = "0.1.0"
 dependencies = [
@@ -1133,6 +1141,13 @@ dependencies = [
 
 [[package]]
 name = "day16-2024"
+version = "0.1.0"
+dependencies = [
+ "aoc_tools",
+]
+
+[[package]]
+name = "day17-2018"
 version = "0.1.0"
 dependencies = [
  "aoc_tools",
@@ -1175,6 +1190,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "day18-2018"
+version = "0.1.0"
+dependencies = [
+ "aoc_tools",
+]
+
+[[package]]
 name = "day18-2019"
 version = "0.1.0"
 dependencies = [
@@ -1207,6 +1229,14 @@ name = "day18-2024"
 version = "0.1.0"
 dependencies = [
  "aoc_tools",
+]
+
+[[package]]
+name = "day19-2018"
+version = "0.1.0"
+dependencies = [
+ "aoc_tools",
+ "wrist_device",
 ]
 
 [[package]]
@@ -1245,6 +1275,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "day20-2018"
+version = "0.1.0"
+dependencies = [
+ "aoc_tools",
+]
+
+[[package]]
 name = "day20-2019"
 version = "0.1.0"
 dependencies = [
@@ -1277,6 +1314,14 @@ name = "day20-2024"
 version = "0.1.0"
 dependencies = [
  "aoc_tools",
+]
+
+[[package]]
+name = "day21-2018"
+version = "0.1.0"
+dependencies = [
+ "aoc_tools",
+ "wrist_device",
 ]
 
 [[package]]
@@ -1319,6 +1364,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "day22-2018"
+version = "0.1.0"
+dependencies = [
+ "aoc_tools",
+]
+
+[[package]]
 name = "day22-2019"
 version = "0.1.0"
 dependencies = [
@@ -1354,6 +1406,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "day23-2018"
+version = "0.1.0"
+dependencies = [
+ "aoc_tools",
+]
+
+[[package]]
 name = "day23-2019"
 version = "0.1.0"
 dependencies = [
@@ -1383,6 +1442,13 @@ dependencies = [
 
 [[package]]
 name = "day23-2024"
+version = "0.1.0"
+dependencies = [
+ "aoc_tools",
+]
+
+[[package]]
+name = "day24-2018"
 version = "0.1.0"
 dependencies = [
  "aoc_tools",
@@ -3323,6 +3389,10 @@ checksum = "6f42320e61fe2cfd34354ecb597f86f413484a798ba44a8ca1165c58d42da6c1"
 dependencies = [
  "bitflags",
 ]
+
+[[package]]
+name = "wrist_device"
+version = "0.1.0"
 
 [[package]]
 name = "write16"
