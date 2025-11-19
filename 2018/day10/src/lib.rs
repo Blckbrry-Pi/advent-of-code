@@ -49,13 +49,14 @@ fn get_message_time(initial: &[Star]) -> usize {
     let mut stars = initial.to_vec();
     let mut max_vertical_line_score = (0, 0);
     for t in 0_usize.. {
+        let positions: HashSet<_> = stars.iter().map(|s| s.pos).collect();
         let avg = Star::average(&stars);
         let mut vertical_line_score = 0;
         for x in avg.x-10..=avg.x+10 {
             let mut vertical_lineness = 0_u32;
             for y in avg.y-4..=avg.y+4 {
                 let pos = Pos { x, y };
-                if stars.iter().any(|s| s.pos == pos) {
+                if positions.contains(&pos) {
                     vertical_lineness += 1;
                 }
             }

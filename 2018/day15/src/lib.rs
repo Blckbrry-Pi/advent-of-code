@@ -244,7 +244,6 @@ pub fn part1(input: &str) -> u64 {
 }
 
 
-// 54680 < a < 57400
 pub fn part2(input: &str) -> u64 {
     let map = parse_input(input);
     let mut min = 4_u16;

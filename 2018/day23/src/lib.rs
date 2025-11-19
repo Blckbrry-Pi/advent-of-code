@@ -49,7 +49,6 @@ pub fn part2(input: &str) -> Scalar {
                         }
                     }
                     if in_range > best_count {
-                        println!("{xdiv},{ydiv},{zdiv}, {in_range}");
                         if xdiv == 0 {
                             best.0 = (x_range.0, x_range.0 + x_step);
                         } else {

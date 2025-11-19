@@ -1,5 +1,6 @@
-use std::collections::BinaryHeap;
+#![feature(cold_path)]
 
+use std::collections::BinaryHeap;
 
 const EROSION_LEVEL_MOD: Num = 20183;
 const X_COEFF: Num = 16807;
@@ -60,6 +61,11 @@ impl Debug for Terrain {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 struct PathingState(Num, ToolState, Pos);
+impl PathingState {
+    pub fn from(dist: Num, tool: ToolState, pos: Pos, _target: Pos) -> Self {
+        Self(dist, tool, pos)
+    }
+}
 impl PartialOrd for PathingState {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
         Some(self.cmp(other))
@@ -152,28 +158,27 @@ impl Map {
     pub fn shortest_path(&mut self) -> Num {
         let mut visited = HashSet::<(ToolState, Pos)>::new();
         let mut queue = BinaryHeap::<PathingState>::new();
-        queue.push(PathingState(0, ToolState::Torch, Pos { x: 0, y: 0 }));
+        queue.push(PathingState::from(0, ToolState::Torch, Pos { x: 0, y: 0 }, self.target));
+
         while let Some(PathingState(dist, tool, pos)) = queue.pop() {
             if pos == self.target && tool == ToolState::Torch { return dist; }
             if visited.contains(&(tool, pos)) { continue; }
             for offset in [Pos::S, Pos::E, Pos::N, Pos::W] {
                 let neighbor = pos.add(offset);
 
-                // if neighbor.y != 0 && neighbor.y as usize >= self.height() {
-                //     self.add_row(self.width() as Num);
-                // }
-                // if neighbor.x != 0 && neighbor.x as usize >= self.height() {
-                //     self.add_col();
-                // }
-
                 let Some(cell) = self.get_raw(neighbor) else { continue; };
                 if tool.is_compatible_with(cell.terrain()) {
                     let new_dist = dist + 1;
-                    queue.push(PathingState(new_dist, tool, neighbor));
+                    if !visited.contains(&(tool, neighbor)) {
+                        queue.push(PathingState::from(new_dist, tool, neighbor, self.target));
+                    }
                 } else {
+                    std::hint::cold_path();
                     for new_tool in ToolState::all_compatible_with(cell.terrain()) {
                         if new_tool.is_compatible_with(self.get_raw(pos).unwrap().terrain()) {
-                            queue.push(PathingState(dist + 8, new_tool, neighbor));
+                            if !visited.contains(&(new_tool, neighbor)) {
+                                queue.push(PathingState::from(dist + 8, new_tool, neighbor, self.target));
+                            }
                         }
                     }
                 }

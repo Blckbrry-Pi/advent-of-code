@@ -8,20 +8,20 @@ struct Group {
     id: u8,
     count: Scalar,
     hp: Scalar,
-    weaknesses: Rc<HashSet<String>>,
-    immunities: Rc<HashSet<String>>,
+    weaknesses: Rc<HashSet<u8>>,
+    immunities: Rc<HashSet<u8>>,
     damage: Scalar,
-    attack_type: Rc<str>,
-    initiative: u32,
+    attack_type: u8,
+    initiative: u8,
 }
 impl Group {
     pub fn effective_power(&self) -> Scalar {
         self.count * self.damage
     }
     pub fn damage_amount(&self, o: &Self) -> Scalar {
-        if o.immunities.contains(self.attack_type.as_ref()) {
+        if o.immunities.contains(&self.attack_type) {
             0
-        } else if o.weaknesses.contains(self.attack_type.as_ref()) {
+        } else if o.weaknesses.contains(&self.attack_type) {
             self.effective_power() * 2
         } else {
             self.effective_power()
@@ -80,9 +80,18 @@ impl Group {
         targets
     }
 }
-impl FromStr for Group {
-    type Err = String;
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
+impl Group {
+    pub fn from_str(s: &str, type_mappings: &mut Vec<String>) -> Result<Self, String> {
+        let mut get_val = |t: &str| {
+            for i in 0..type_mappings.len() {
+                if &*t == &*type_mappings[i] {
+                    return i as u8;
+                }
+            }
+            type_mappings.push(t.to_string());
+            type_mappings.len() as u8 - 1
+        };
+
         let Some((count, s)) = s.split_once(" units each with ") else { return Err("missing unit count".to_string()); };
         let Some((hp, s)) = s.split_once(" hit points") else { return Err("missing unit hp".to_string()); };
         let Some((weak_immune, s)) = s.split_once("with an attack that does ") else { return Err("missing weaknesses and immunities".to_string()); };
@@ -91,7 +100,7 @@ impl FromStr for Group {
         let count      = count     .parse::<Scalar>().map_err(|e| format!("Invalid unit count {count:?}: {e:?}"))?;
         let hp         = hp        .parse::<Scalar>().map_err(|e| format!("Invalid unit hp {hp:?}: {e:?}"))?;
         let damage     = damage    .parse::<Scalar>().map_err(|e| format!("Invalid attack damage {damage:?}: {e:?}"))?;
-        let initiative = initiative.parse::<u32>().map_err(|e| format!("Invalid initiative {initiative:?}: {e:?}"))?;
+        let initiative  = initiative.parse::<u8>    ().map_err(|e| format!("Invalid initiative {initiative:?}: {e:?}"))?;
 
 
         let weak_immune = weak_immune.trim_start_matches(" (").trim_end_matches(") ");
@@ -103,8 +112,8 @@ impl FromStr for Group {
         };
         let weaknesses = weaknesses.strip_prefix("weak to ").unwrap_or(weaknesses);
         let immunities = immunities.strip_prefix("immune to ").unwrap_or(immunities);
-        let weaknesses = weaknesses.split(", ").filter(|w| !w.is_empty()).map(|w| w.to_string()).collect();
-        let immunities = immunities.split(", ").filter(|w| !w.is_empty()).map(|i| i.to_string()).collect();
+        let weaknesses = weaknesses.split(", ").filter(|w| !w.is_empty()).map(|w| get_val(w)).collect();
+        let immunities = immunities.split(", ").filter(|i| !i.is_empty()).map(|i| get_val(i)).collect();
 
         Ok(Group {
             id: 0,
@@ -113,7 +122,7 @@ impl FromStr for Group {
             weaknesses: Rc::new(weaknesses),
             immunities: Rc::new(immunities),
             damage,
-            attack_type: Rc::from(attack_type),
+            attack_type: get_val(attack_type),
             initiative,
         })
     }
@@ -206,7 +215,7 @@ pub fn part2(input: &str) -> Scalar {
     let (immune, infection) = parse_input(input);
 
     let mut min = 1;
-    let mut max = 2;
+    let mut max = 32;
     while immune_system_wins_by(&immune, &infection, max).is_none() {
         min = max;
         max *= 2;
@@ -226,16 +235,18 @@ pub fn part2(input: &str) -> Scalar {
 fn parse_input(input: &str) -> (Vec<Group>, Vec<Group>) {
     let (immune, infection) = input.split_once("\n\nInfection:\n").unwrap();
     let immune = immune.strip_prefix("Immune System:\n").unwrap();
+
+    let mut mappings = vec![];
     (
         immune.trim()
             .lines()
-            .map(|g| g.parse::<Group>().unwrap())
+            .map(|g| Group::from_str(g, &mut mappings).unwrap())
             .enumerate()
             .map(|(i, mut group)| { group.id = i as u8 + 1; group })
             .collect(),
         infection.trim()
             .lines()
-            .map(|g| g.parse::<Group>().unwrap())
+            .map(|g| Group::from_str(g, &mut mappings).unwrap())
             .enumerate()
             .map(|(i, mut group)| { group.id = i as u8 + 1; group })
             .collect(),

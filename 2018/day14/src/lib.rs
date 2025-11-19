@@ -1,20 +1,40 @@
+#![feature(cold_path)]
+
 aoc_tools::aoc_sol!(day14 2018: part1, part2);
 
-struct State(Vec<u8>, [usize; 2]);
+struct State(Vec<u8>, [usize; 2], [u8; 2]);
 impl State {
-    pub fn extend_list(&mut self) {
-        let mut sum = self.0[self.1[0]] + self.0[self.1[1]];
-        if sum >= 10 {
+    pub fn extend_list(&mut self, target_last: u8) -> bool {
+        let mut sum = self.2[0] + self.2[1];
+        let must_check = if sum >= 10 {
             self.0.push(1);
             sum -= 10;
-        }
+            target_last == 1
+        } else { false };
+
         self.0.push(sum);
+        must_check || target_last == sum
     }
+
     pub fn choose_next_recipes(&mut self) {
-        for i in 0..self.1.len() {
-            self.1[i] += 1 + self.0[self.1[i]] as usize;
-            self.1[i] %= self.0.len();
+        self.1[0] += 1 + self.2[0] as usize;
+        self.1[1] += 1 + self.2[1] as usize;
+
+        if self.0.len() >= 10 {
+            if self.1[0] >= self.0.len() {
+                self.1[0] -= self.0.len();
+            }
+            if self.1[1] >= self.0.len() {
+                self.1[1] -= self.0.len();
+            }
+        } else {
+            std::hint::cold_path();
+            self.1[0] %= self.0.len();
+            self.1[1] %= self.0.len();
         }
+
+        self.2[0] = self.0[self.1[0]];
+        self.2[1] = self.0[self.1[1]];
     }
 
     pub fn index_of_last_2(&self, l: &[u8]) -> Option<usize> {
@@ -46,9 +66,9 @@ impl Debug for State {
 
 pub fn part1(input: &str) -> String {
     let (recipes, _) = parse_input(input);
-    let mut state = State(vec![3, 7], [0, 1]);
+    let mut state = State(vec![3, 7], [0, 1], [3, 7]);
     loop {
-        state.extend_list();
+        state.extend_list(0);
         if state.0.len() >= recipes + 10 { break }
         state.choose_next_recipes();
     }
@@ -58,11 +78,13 @@ pub fn part1(input: &str) -> String {
 
 pub fn part2(input: &str) -> usize {
     let (_, target) = parse_input(input);
-    let mut state = State(vec![3, 7], [0, 1]);
+    let target_last = *target.last().unwrap();
+    let mut state = State(vec![3, 7], [0, 1], [3, 7]);
     loop {
-        state.extend_list();
-        if let Some(idx) = state.index_of_last_2(&target) {
-            return idx;
+        if state.extend_list(target_last) {
+            if let Some(idx) = state.index_of_last_2(&target) {
+                return idx;
+            }
         }
         state.choose_next_recipes();
     }

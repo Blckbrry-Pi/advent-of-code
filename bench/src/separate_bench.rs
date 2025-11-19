@@ -127,7 +127,6 @@ aoc_tools::day_bench!(day12 2018: day12_2018);
 aoc_tools::day_bench!(day13 2018: day13_2018);
 aoc_tools::day_bench!(day14 2018: day14_2018);
 aoc_tools::day_bench!(day15 2018: day15_2018);
-/*
 aoc_tools::day_bench!(day16 2018: day16_2018);
 aoc_tools::day_bench!(day17 2018: day17_2018);
 aoc_tools::day_bench!(day18 2018: day18_2018);
@@ -138,7 +137,6 @@ aoc_tools::day_bench!(day22 2018: day22_2018);
 aoc_tools::day_bench!(day23 2018: day23_2018);
 aoc_tools::day_bench!(day24 2018: day24_2018);
 aoc_tools::day_bench!(day25 2018: day25_2018);
-*/
 
 criterion_main!(
     // 2024
@@ -272,7 +270,6 @@ criterion_main!(
     day13_2018::day13_2018,
     day14_2018::day14_2018,
     day15_2018::day15_2018,
-    /*
     day16_2018::day16_2018,
     day17_2018::day17_2018,
     day18_2018::day18_2018,
@@ -283,5 +280,4 @@ criterion_main!(
     day23_2018::day23_2018,
     day24_2018::day24_2018,
     day25_2018::day25_2018,
-    */
 );
